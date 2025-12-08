@@ -127,20 +127,25 @@
             .then(data => {
                 currentData = data;
                 initForm();
+            })
+            .catch(err => {
+                document.getElementById('status-msg').innerText = "❌ 无法连接到后台服务，请检查 server.js 是否运行";
+                document.getElementById('status-msg').style.color = "red";
+                console.error("Fetch Error:", err);
             });
 
         // 初始化表单
         function initForm() {
             // Config
-            document.getElementById('cfg-title').value = currentData.config.title;
-            document.getElementById('cfg-date').value = currentData.config.date;
+            document.getElementById('cfg-title').value = currentData.config.title || '';
+            document.getElementById('cfg-date').value = currentData.config.date || '';
 
             // Logo & QR (显示图片和路径)
-            document.getElementById('preview-logo').src = currentData.config.logo_url;
-            document.getElementById('cfg-logo-val').value = currentData.config.logo_url;
+            document.getElementById('preview-logo').src = currentData.config.logo_url || '';
+            document.getElementById('cfg-logo-val').value = currentData.config.logo_url || '';
 
-            document.getElementById('preview-qr').src = currentData.config.qr_url;
-            document.getElementById('cfg-qr-val').value = currentData.config.qr_url;
+            document.getElementById('preview-qr').src = currentData.config.qr_url || '';
+            document.getElementById('cfg-qr-val').value = currentData.config.qr_url || '';
 
             renderDishes();
             renderChefs();
@@ -157,8 +162,8 @@
                     <div class="item-content">
                         <input type="text" class="form-input" placeholder="菜名" value="${dish.name}" oninput="currentData.dishes[${index}].name = this.value">
                         <input type="text" class="form-input" placeholder="厨师" value="${dish.chef}" oninput="currentData.dishes[${index}].chef = this.value">
-                        <input type="number" class="form-input" placeholder="赞" value="${dish.up}" oninput="currentData.dishes[${index}].up = parseInt(this.value)">
-                        <input type="number" class="form-input" placeholder="踩" value="${dish.down}" oninput="currentData.dishes[${index}].down = parseInt(this.value)">
+                        <input type="number" class="form-input" placeholder="赞" value="${dish.up}" oninput="currentData.dishes[${index}].up = parseInt(this.value || 0)">
+                        <input type="number" class="form-input" placeholder="踩" value="${dish.down}" oninput="currentData.dishes[${index}].down = parseInt(this.value || 0)">
                     </div>
                     <div class="btn-del" onclick="removeDish(${index})">删除</div>
                 `;
@@ -175,7 +180,7 @@
                 div.className = 'list-item';
                 div.innerHTML = `
                     <div class="img-upload-box">
-                        <img src="${chef.photo}" class="preview-img" id="chef-img-${index}">
+                        <img src="${chef.photo}" class="preview-img" id="chef-img-${index}" onerror="this.src='static/logo.png'">
                         <div style="font-size:12px; text-align:center;">
                             <div class="file-btn">换图<input type="file" onchange="uploadFile(this, null, 'chef-img-${index}', ${index})"></div>
                         </div>
@@ -185,9 +190,9 @@
                         <input type="text" class="form-input" placeholder="职位" value="${chef.role}" oninput="currentData.chefs[${index}].role = this.value">
                         <textarea class="form-input full-width" rows="2" placeholder="简介" oninput="currentData.chefs[${index}].desc = this.value">${chef.desc}</textarea>
                         <div style="display:flex; gap:10px;" class="full-width">
-                             <label>日榜名次: <input type="number" value="${chef.daily_rank}" style="width:50px" oninput="currentData.chefs[${index}].daily_rank = parseInt(this.value)"></label>
-                             <label>月榜名次: <input type="number" value="${chef.monthly_rank}" style="width:50px" oninput="currentData.chefs[${index}].monthly_rank = parseInt(this.value)"></label>
-                             <label>月票数: <input type="number" value="${chef.monthly_votes}" style="width:50px" oninput="currentData.chefs[${index}].monthly_votes = parseInt(this.value)"></label>
+                             <label>日榜名次: <input type="number" value="${chef.daily_rank}" style="width:50px" oninput="currentData.chefs[${index}].daily_rank = parseInt(this.value || 0)"></label>
+                             <label>月榜名次: <input type="number" value="${chef.monthly_rank}" style="width:50px" oninput="currentData.chefs[${index}].monthly_rank = parseInt(this.value || 0)"></label>
+                             <label>月票数: <input type="number" value="${chef.monthly_votes}" style="width:50px" oninput="currentData.chefs[${index}].monthly_votes = parseInt(this.value || 0)"></label>
                         </div>
                     </div>
                     <div class="btn-del" onclick="removeChef(${index})">删除</div>
@@ -199,7 +204,8 @@
         // --- 逻辑操作 ---
 
         function addDish() {
-            currentData.dishes.push({ id: Date.now(), name: "", chef: "", up: 0, down: 0 });
+            // 使用当前时间戳作为唯一ID
+            currentData.dishes.push({ id: Date.now(), name: "新菜品", chef: "新厨师", up: 0, down: 0 });
             renderDishes();
         }
         function removeDish(index) {
@@ -208,7 +214,7 @@
         }
 
         function addChef() {
-            currentData.chefs.push({ id: Date.now(), name: "", role: "", photo: "static/logo.png", desc: "", daily_rank: 99, monthly_rank: 99, monthly_votes: 0 });
+            currentData.chefs.push({ id: Date.now(), name: "新厨师", role: "厨师", photo: "static/logo.png", desc: "请修改简介", daily_rank: 99, monthly_rank: 99, monthly_votes: 0 });
             renderChefs();
         }
         function removeChef(index) {
@@ -217,10 +223,6 @@
         }
 
         // --- 核心：文件上传 ---
-        // input: 文件框对象
-        // hiddenInputId: 存储路径的隐藏input ID (Config用)
-        // imgPreviewId: 预览图片的 img ID
-        // chefIndex: 如果是修改厨师图片，传入索引
         function uploadFile(input, hiddenInputId, imgPreviewId, chefIndex = null) {
             const file = input.files[0];
             if (!file) return;
@@ -240,7 +242,7 @@
                     // 1. 更新预览
                     document.getElementById(imgPreviewId).src = data.url;
 
-                    // 2. 更新数据
+                    // 2. 更新数据结构
                     if (chefIndex !== null) {
                         currentData.chefs[chefIndex].photo = data.url;
                     } else if (hiddenInputId) {
@@ -249,7 +251,10 @@
                     document.getElementById('status-msg').innerText = "图片已就绪，记得点保存";
                 }
             })
-            .catch(err => alert("上传失败"));
+            .catch(err => {
+                document.getElementById('status-msg').innerText = "上传失败，请检查服务器日志";
+                console.error("Upload Error:", err);
+            });
         }
 
         // --- 核心：保存所有数据 ---
@@ -260,6 +265,10 @@
             currentData.config.logo_url = document.getElementById('cfg-logo-val').value;
             currentData.config.qr_url = document.getElementById('cfg-qr-val').value;
 
+            // 临时禁用保存按钮，防止重复提交
+            const saveBtn = document.querySelector('.btn-save');
+            saveBtn.disabled = true;
+
             fetch('/api/save', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -267,14 +276,20 @@
             })
             .then(res => res.json())
             .then(res => {
+                saveBtn.disabled = false;
                 if (res.success) {
                     const msg = document.getElementById('status-msg');
                     msg.innerText = "✅ 保存成功！ " + new Date().toLocaleTimeString();
                     msg.style.color = "green";
-                    setTimeout(() => msg.innerText = "", 3000);
+                    setTimeout(() => msg.innerText = "", 5000);
                 } else {
-                    alert("保存失败");
+                    alert("保存失败，请检查服务器日志");
                 }
+            })
+            .catch(err => {
+                saveBtn.disabled = false;
+                alert("保存过程中出现网络错误");
+                console.error("Save Error:", err);
             });
         }
     </script>
