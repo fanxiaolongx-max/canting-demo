@@ -3,8 +3,14 @@ const fs = require('fs');
 const path = require('path');
 const multer = require('multer'); // 引入图片上传处理库
 
-const app = express();
-const PORT = 3010;
+// const app = express();
+// const PORT = 3010;
+const PORT = process.env.PORT || 3010;
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`前台地址: http://localhost:${PORT}`);
+    console.log(`后台地址: http://localhost:${PORT}/admin.html`);
+});
+
 
 app.use(express.json());
 app.use(express.static(__dirname));
@@ -76,4 +82,5 @@ app.post('/api/vote', (req, res) => {
 app.listen(PORT, () => {
     console.log(`前台地址: http://localhost:${PORT}`);
     console.log(`后台地址: http://localhost:${PORT}/admin.html`);
+
 });
