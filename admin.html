@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>后台管理系统</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Microsoft YaHei", sans-serif; }
+        body { background-color: #f0f2f5; padding-bottom: 80px; }
+
+        /* 顶部导航 */
+        header { background-color: #0f6b48; color: #fff; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { font-size: 20px; font-weight: bold; }
+        .back-link { color: rgba(255,255,255,0.8); text-decoration: none; font-size: 14px; }
+        .back-link:hover { color: #fff; }
+
+        /* 内容容器 */
+        .container { max-width: 1000px; margin: 20px auto; padding: 0 20px; }
+
+        /* 卡片通用样式 */
+        .card { background: #fff; border-radius: 8px; padding: 25px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .card-title { font-size: 18px; color: #0f6b48; border-bottom: 2px solid #f0f2f5; padding-bottom: 10px; margin-bottom: 20px; font-weight: bold; }
+
+        /* 表单控件 */
+        .form-group { margin-bottom: 15px; display: flex; align-items: center; }
+        .form-group label { width: 100px; color: #666; font-size: 14px; font-weight: bold; }
+        .form-input { flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; outline: none; transition: 0.3s; }
+        .form-input:focus { border-color: #0f6b48; }
+
+        /* 图片上传区 */
+        .img-upload-box { display: flex; align-items: center; gap: 15px; }
+        .preview-img { width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #eee; background: #f9f9f9; }
+        .file-btn { position: relative; overflow: hidden; display: inline-block; cursor: pointer; color: #0f6b48; font-size: 13px; text-decoration: underline; }
+        .file-btn input { position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+
+        /* 列表管理（菜品/厨师） */
+        .list-item { display: flex; gap: 15px; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 15px; align-items: flex-start; }
+        .list-item:last-child { border-bottom: none; margin-bottom: 0; }
+        .item-content { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .full-width { grid-column: span 2; }
+
+        /* 按钮 */
+        .btn-add { display: block; width: 100%; padding: 10px; text-align: center; border: 1px dashed #0f6b48; color: #0f6b48; background: #f0fcf8; border-radius: 4px; cursor: pointer; margin-top: 10px; }
+        .btn-add:hover { background: #e0f5ee; }
+
+        .btn-del { color: #cc0000; font-size: 12px; cursor: pointer; margin-top: 5px; }
+
+        /* 底部悬浮保存条 */
+        .save-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; padding: 15px; box-shadow: 0 -5px 15px rgba(0,0,0,0.1); display: flex; justify-content: flex-end; align-items: center; gap: 20px; z-index: 100; }
+        .status-msg { color: #666; font-size: 14px; }
+        .btn-save { background-color: #0f6b48; color: white; border: none; padding: 12px 40px; border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-save:hover { background-color: #0b5539; }
+
+        /* 响应式调整 */
+        @media (max-width: 600px) {
+            .item-content { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>餐厅数据后台管理</h1>
+        <a href="/" target="_blank" class="back-link">查看前台页面 &rarr;</a>
+    </header>
+
+    <div class="container">
+
+        <div class="card">
+            <div class="card-title">全局配置 (Config)</div>
+            <div class="form-group">
+                <label>页面标题</label>
+                <input type="text" class="form-input" id="cfg-title">
+            </div>
+            <div class="form-group">
+                <label>日期/位置</label>
+                <input type="text" class="form-input" id="cfg-date">
+            </div>
+            <div class="form-group">
+                <label>行政Logo</label>
+                <div class="img-upload-box">
+                    <img src="" class="preview-img" id="preview-logo">
+                    <div class="file-btn">
+                        更换图片...
+                        <input type="file" onchange="uploadFile(this, 'cfg-logo-val', 'preview-logo')">
+                    </div>
+                    <input type="hidden" id="cfg-logo-val"> </div>
+            </div>
+            <div class="form-group">
+                <label>二维码</label>
+                <div class="img-upload-box">
+                    <img src="" class="preview-img" id="preview-qr">
+                    <div class="file-btn">
+                        更换图片...
+                        <input type="file" onchange="uploadFile(this, 'cfg-qr-val', 'preview-qr')">
+                    </div>
+                    <input type="hidden" id="cfg-qr-val">
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">菜品列表 (Dishes)</div>
+            <div id="dishes-list"></div>
+            <div class="btn-add" onclick="addDish()">+ 新增一道菜</div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">厨师列表 (Chefs)</div>
+            <div id="chefs-list"></div>
+            <div class="btn-add" onclick="addChef()">+ 新增一位厨师</div>
+        </div>
+
+    </div>
+
+    <div class="save-bar">
+        <span class="status-msg" id="status-msg"></span>
+        <button class="btn-save" onclick="saveAll()">保存所有修改</button>
+    </div>
+
+    <script>
+        let currentData = {};
+
+        // 页面加载时获取数据
+        fetch('/api/data')
+            .then(res => res.json())
+            .then(data => {
+                currentData = data;
+                initForm();
+            });
+
+        // 初始化表单
+        function initForm() {
+            // Config
+            document.getElementById('cfg-title').value = currentData.config.title;
+            document.getElementById('cfg-date').value = currentData.config.date;
+
+            // Logo & QR (显示图片和路径)
+            document.getElementById('preview-logo').src = currentData.config.logo_url;
+            document.getElementById('cfg-logo-val').value = currentData.config.logo_url;
+
+            document.getElementById('preview-qr').src = currentData.config.qr_url;
+            document.getElementById('cfg-qr-val').value = currentData.config.qr_url;
+
+            renderDishes();
+            renderChefs();
+        }
+
+        // 渲染菜品
+        function renderDishes() {
+            const container = document.getElementById('dishes-list');
+            container.innerHTML = '';
+            currentData.dishes.forEach((dish, index) => {
+                const div = document.createElement('div');
+                div.className = 'list-item';
+                div.innerHTML = `
+                    <div class="item-content">
+                        <input type="text" class="form-input" placeholder="菜名" value="${dish.name}" oninput="currentData.dishes[${index}].name = this.value">
+                        <input type="text" class="form-input" placeholder="厨师" value="${dish.chef}" oninput="currentData.dishes[${index}].chef = this.value">
+                        <input type="number" class="form-input" placeholder="赞" value="${dish.up}" oninput="currentData.dishes[${index}].up = parseInt(this.value)">
+                        <input type="number" class="form-input" placeholder="踩" value="${dish.down}" oninput="currentData.dishes[${index}].down = parseInt(this.value)">
+                    </div>
+                    <div class="btn-del" onclick="removeDish(${index})">删除</div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // 渲染厨师
+        function renderChefs() {
+            const container = document.getElementById('chefs-list');
+            container.innerHTML = '';
+            currentData.chefs.forEach((chef, index) => {
+                const div = document.createElement('div');
+                div.className = 'list-item';
+                div.innerHTML = `
+                    <div class="img-upload-box">
+                        <img src="${chef.photo}" class="preview-img" id="chef-img-${index}">
+                        <div style="font-size:12px; text-align:center;">
+                            <div class="file-btn">换图<input type="file" onchange="uploadFile(this, null, 'chef-img-${index}', ${index})"></div>
+                        </div>
+                    </div>
+                    <div class="item-content" style="flex:1">
+                        <input type="text" class="form-input" placeholder="姓名" value="${chef.name}" oninput="currentData.chefs[${index}].name = this.value">
+                        <input type="text" class="form-input" placeholder="职位" value="${chef.role}" oninput="currentData.chefs[${index}].role = this.value">
+                        <textarea class="form-input full-width" rows="2" placeholder="简介" oninput="currentData.chefs[${index}].desc = this.value">${chef.desc}</textarea>
+                        <div style="display:flex; gap:10px;" class="full-width">
+                             <label>日榜名次: <input type="number" value="${chef.daily_rank}" style="width:50px" oninput="currentData.chefs[${index}].daily_rank = parseInt(this.value)"></label>
+                             <label>月榜名次: <input type="number" value="${chef.monthly_rank}" style="width:50px" oninput="currentData.chefs[${index}].monthly_rank = parseInt(this.value)"></label>
+                             <label>月票数: <input type="number" value="${chef.monthly_votes}" style="width:50px" oninput="currentData.chefs[${index}].monthly_votes = parseInt(this.value)"></label>
+                        </div>
+                    </div>
+                    <div class="btn-del" onclick="removeChef(${index})">删除</div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // --- 逻辑操作 ---
+
+        function addDish() {
+            currentData.dishes.push({ id: Date.now(), name: "", chef: "", up: 0, down: 0 });
+            renderDishes();
+        }
+        function removeDish(index) {
+            currentData.dishes.splice(index, 1);
+            renderDishes();
+        }
+
+        function addChef() {
+            currentData.chefs.push({ id: Date.now(), name: "", role: "", photo: "static/logo.png", desc: "", daily_rank: 99, monthly_rank: 99, monthly_votes: 0 });
+            renderChefs();
+        }
+        function removeChef(index) {
+            currentData.chefs.splice(index, 1);
+            renderChefs();
+        }
+
+        // --- 核心：文件上传 ---
+        // input: 文件框对象
+        // hiddenInputId: 存储路径的隐藏input ID (Config用)
+        // imgPreviewId: 预览图片的 img ID
+        // chefIndex: 如果是修改厨师图片，传入索引
+        function uploadFile(input, hiddenInputId, imgPreviewId, chefIndex = null) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            document.getElementById('status-msg').innerText = "图片上传中...";
+
+            fetch('/api/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.url) {
+                    // 1. 更新预览
+                    document.getElementById(imgPreviewId).src = data.url;
+
+                    // 2. 更新数据
+                    if (chefIndex !== null) {
+                        currentData.chefs[chefIndex].photo = data.url;
+                    } else if (hiddenInputId) {
+                        document.getElementById(hiddenInputId).value = data.url;
+                    }
+                    document.getElementById('status-msg').innerText = "图片已就绪，记得点保存";
+                }
+            })
+            .catch(err => alert("上传失败"));
+        }
+
+        // --- 核心：保存所有数据 ---
+        function saveAll() {
+            // 收集 Config 数据
+            currentData.config.title = document.getElementById('cfg-title').value;
+            currentData.config.date = document.getElementById('cfg-date').value;
+            currentData.config.logo_url = document.getElementById('cfg-logo-val').value;
+            currentData.config.qr_url = document.getElementById('cfg-qr-val').value;
+
+            fetch('/api/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(currentData)
+            })
+            .then(res => res.json())
+            .then(res => {
+                if (res.success) {
+                    const msg = document.getElementById('status-msg');
+                    msg.innerText = "✅ 保存成功！ " + new Date().toLocaleTimeString();
+                    msg.style.color = "green";
+                    setTimeout(() => msg.innerText = "", 3000);
+                } else {
+                    alert("保存失败");
+                }
+            });
+        }
+    </script>
+</body>
+</html>

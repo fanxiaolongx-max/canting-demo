@@ -1,0 +1,60 @@
+{
+  "config": {
+    "title": "埃及尼罗河餐厅全接触",
+    "date": "2025-12-08 午餐",
+    "logo_url": "static/logo.png",
+    "qr_url": "static/img-1765202791197.png"
+  },
+  "dishes": [
+    {
+      "id": 3,
+      "name": "牛肉酸辣粉",
+      "chef": "雷云龙",
+      "up": 24,
+      "down": 6
+    },
+    {
+      "id": 1,
+      "name": "香酥鸡腿",
+      "chef": "丁科",
+      "up": 14,
+      "down": 0
+    },
+    {
+      "id": 4,
+      "name": "红烧肉",
+      "chef": "雷云龙",
+      "up": 9,
+      "down": 1
+    },
+    {
+      "id": 2,
+      "name": "葱烧大排",
+      "chef": "丁科",
+      "up": 6,
+      "down": 2
+    }
+  ],
+  "chefs": [
+    {
+      "id": 1,
+      "name": "雷云龙",
+      "role": "厨师长",
+      "photo": "static/img-1765202958603.png",
+      "desc": "今天工作不努力，明天努力找工作。",
+      "daily_rank": 1,
+      "monthly_rank": 1,
+      "monthly_votes": 9
+    },
+    {
+      "id": 2,
+      "name": "丁科",
+      "role": "高级厨师",
+      "photo": "static/img-1765202963142.png",
+      "desc": "勤俭好学，用心做菜",
+      "daily_rank": 2,
+      "monthly_rank": 2,
+      "monthly_votes": 0
+    }
+  ]
+}

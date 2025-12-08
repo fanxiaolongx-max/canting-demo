@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>餐厅看板</title>
+    <style>
+        /* CSS 样式 - 保持与图片一致的深绿色风格 */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Microsoft YaHei", sans-serif; }
+        body { background-color: #f0f2f5; height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        .dashboard-container { width: 95%; height: 90%; background-color: #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: flex; flex-direction: column; border-radius: 8px; overflow: hidden; }
+        
+        /* 顶部 */
+        header { background-color: #0f6b48; color: rgba(255,255,255,0.8); padding: 10px 20px; font-size: 12px; display: flex; gap: 20px; }
+        .header-title-area { background-color: #0f6b48; color: #fff; padding: 10px 30px; font-size: 24px; font-weight: bold; }
+        
+        /* 布局 */
+        .main-content { flex: 1; display: flex; padding: 20px 30px; gap: 30px; position: relative; }
+        .section-title { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 15px; }
+
+        /* 左栏 */
+        .column-left { flex: 0 0 40%; display: flex; flex-direction: column; border-right: 1px solid #e0e0e0; padding-right: 20px; }
+        .dish-list { overflow-y: auto; flex: 1; padding-right: 10px; }
+        .dish-list::-webkit-scrollbar { width: 6px; }
+        .dish-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+        
+        .dish-item { display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid #f5f5f5; transition: 0.3s; }
+        .rank-badge { width: 24px; height: 24px; background-color: #999; color: #fff; text-align: center; line-height: 24px; font-size: 14px; margin-right: 15px; border-radius: 2px; }
+        .rank-badge.top-3 { background-color: #0f6b48; }
+        .dish-info { flex: 1; font-size: 15px; color: #333; }
+        .dish-info span { color: #666; font-size: 13px; }
+        
+        .vote-stats { display: flex; gap: 15px; color: #666; font-size: 14px; }
+        .icon-group { display: flex; gap: 4px; cursor: pointer; align-items: center; }
+        .icon-group:hover svg { fill: #0f6b48; }
+        svg { width: 16px; height: 16px; fill: #999; transition: 0.2s; }
+
+        /* 中栏 */
+        .column-middle { flex: 0 0 30%; position: relative; }
+        .chef-list-item { display: flex; margin-bottom: 25px; }
+        .chef-rank { font-size: 16px; color: #666; margin-right: 15px; padding-top: 10px; }
+        .chef-photo { width: 60px; height: 70px; background-color: #eee; margin-right: 15px; object-fit: cover; border-radius: 4px; }
+        .chef-details h4 { font-size: 16px; margin-bottom: 5px; color: #333; }
+        .chef-details p { font-size: 12px; color: #666; line-height: 1.4; }
+        
+        .footer-location { position: absolute; bottom: 15px; font-size: 12px; color: #666; display: flex; gap: 5px; }
+
+        /* 右栏 */
+        .column-right { flex: 1; display: flex; flex-direction: column; position: relative;}
+        .month-rank-item { display: flex; align-items: center; margin-bottom: 20px; }
+        .medal { width: 20px; margin-right: 10px; text-align: center; font-size: 18px; }
+        .chef-mini-photo { width: 40px; height: 40px; background-color: #eee; border-radius: 50%; margin-right: 10px; object-fit: cover; }
+        .month-details strong { font-size: 14px; display:block; }
+        .month-details span { font-size: 12px; color: #999; }
+        .month-score { margin-left: auto; font-size: 12px; color: #666; }
+
+
+        .profile-card {
+            margin-top: auto;      /* 保持让卡片尽量靠下 */
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #eee;
+
+            /* 关键修改在这里：加大底部距离，把卡片往上顶 */
+            margin-bottom: 100px;
+        }
+        .profile-header { display: flex; gap: 10px; margin-bottom: 10px; }
+        .qr-section { display: flex; gap: 10px; }
+        .qr-box { flex: 1; background: #fff; padding: 5px; display: flex; align-items: center; gap: 5px; border: 1px solid #eee; }
+        .qr-img { width: 30px; height: 30px; object-fit: contain; }
+        
+        /* --- 修改点 1：调整了 Logo 父容器的对齐方式 --- */
+        .huawei-logo { position: absolute; bottom: 15px; right: 15px; display: flex; align-items: center; }
+
+        /* --- 修改点 2：加大了 Logo 图片的高度 --- */
+        .logo-img { height: 50px; width: auto; }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <header>
+            <span>Home</span><span>Administration</span><span>IT</span><span>HR</span>
+            <span>Transaction flow</span><span>Privacy Statement</span>
+        </header>
+
+        <div class="header-title-area" id="page-title">加载中...</div>
+
+        <div class="main-content">
+            <div class="column-left">
+                <div class="section-title">人气菜品榜</div>
+                <div class="dish-list" id="dish-container"></div>
+            </div>
+
+            <div class="column-middle">
+                <div class="section-title">人气厨师日榜</div>
+                <div id="chef-daily-container"></div>
+                <div class="footer-location" id="date-location">
+                    📍 2025-12-08
+                </div>
+            </div>
+
+            <div class="column-right">
+                <div class="section-title">人气厨师月榜</div>
+                <div id="chef-monthly-container"></div>
+
+                <div class="profile-card" id="profile-card"></div>
+
+                <div class="huawei-logo">
+                    <img id="footer-logo" src="" class="logo-img">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 页面启动时获取数据
+        fetch('/api/data')
+            .then(res => res.json())
+            .then(data => renderPage(data))
+            .catch(err => console.error("请先运行 node server.js", err));
+
+        function renderPage(data) {
+            const config = data.config;
+            const dishes = data.dishes; // 已经是后端排好序的
+            const chefs = data.chefs;
+
+            // 1. 配置基础信息
+            document.getElementById('page-title').innerText = config.title;
+            document.getElementById('date-location').innerText = `📍 ${config.date}`;
+            document.getElementById('footer-logo').src = config.logo_url;
+
+            // 2. 渲染菜品列表
+            const dishHtml = dishes.map((dish, index) => {
+                const rank = index + 1;
+                return `
+                    <div class="dish-item">
+                        <div class="rank-badge ${rank <= 3 ? 'top-3' : ''}">${rank}</div>
+                        <div class="dish-info">${dish.name} - <span>${dish.chef}</span></div>
+                        <div class="vote-stats">
+                            <div class="icon-group" onclick="vote(${dish.id}, 'up')">
+                                <svg viewBox="0 0 24 24"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91l-.01-.01L23 10z"/></svg>
+                                <span>${dish.up}</span>
+                            </div>
+                            <div class="icon-group" onclick="vote(${dish.id}, 'down')">
+                                <svg viewBox="0 0 24 24" style="transform: rotate(180deg);"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91l-.01-.01L23 10z"/></svg>
+                                <span>${dish.down}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            document.getElementById('dish-container').innerHTML = dishHtml;
+
+            // 3. 渲染厨师列表 (日榜)
+            const dailyChefs = [...chefs].sort((a,b) => a.daily_rank - b.daily_rank);
+            document.getElementById('chef-daily-container').innerHTML = dailyChefs.map(chef => `
+                <div class="chef-list-item">
+                    <div class="chef-rank">${chef.daily_rank}</div>
+                    <img src="${chef.photo}" class="chef-photo" onerror="this.src='//via.placeholder.com/60'">
+                    <div class="chef-details">
+                        <h4>${chef.name}</h4>
+                        <p>${chef.desc}</p>
+                    </div>
+                </div>
+            `).join('');
+
+            // 4. 渲染月榜
+            const monthlyChefs = [...chefs].sort((a,b) => a.monthly_rank - b.monthly_rank);
+            document.getElementById('chef-monthly-container').innerHTML = monthlyChefs.map(chef => `
+                <div class="month-rank-item">
+                    <div class="medal">${chef.monthly_rank === 1 ? '🥇' : '🥈'}</div>
+                    <img src="${chef.photo}" class="chef-mini-photo">
+                    <div class="month-details">
+                        <strong>${chef.name}</strong>
+                        <span>本月得票: ${chef.monthly_votes}</span>
+                    </div>
+                    <div class="month-score">月度第${chef.monthly_rank}名</div>
+                </div>
+            `).join('');
+
+            // 5. 个人卡片 (显示日榜第一名)
+            const topChef = dailyChefs[0];
+            document.getElementById('profile-card').innerHTML = `
+                <div class="profile-header">
+                    <img src="${topChef.photo}" class="chef-photo">
+                    <div class="chef-details">
+                        <h4>${topChef.name} <span>${topChef.role}</span></h4>
+                        <p>${topChef.desc}</p>
+                    </div>
+                </div>
+                <div class="qr-section">
+                    <div class="qr-box"><img src="${config.qr_url}" class="qr-img"><span style="font-size:10px;color:#666">心声墙</span></div>
+                    <div class="qr-box"><img src="${config.qr_url}" class="qr-img"><span style="font-size:10px;color:#666">点赞榜</span></div>
+                </div>
+            `;
+        }
+
+        // 投票功能
+        function vote(id, type) {
+            fetch('/api/vote', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ dishId: id, type: type })
+            })
+            .then(res => res.json())
+            .then(res => {
+                if(res.success) {
+                    // 使用新的数据重新渲染页面
+                    renderPage(res.newData);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
