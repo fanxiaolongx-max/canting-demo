@@ -23,7 +23,7 @@ primary_region = 'iad'
   auto_extend_size_limit = '10GB'
 
 [http_service]
-  internal_port = 3000
+  internal_port = 3010
   force_https = true
   auto_stop_machines = 'stop'
   auto_start_machines = true
