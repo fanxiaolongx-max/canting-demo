@@ -1,60 +1,96 @@
 {
   "config": {
-    "title": "埃及尼罗河餐厅全接触",
-    "date": "2025-12-08 午餐",
+    "title": "SV餐厅午餐美食推荐",
+    "date": "本周午餐 | 主厨 彭刘锋 · 兰达武",
     "logo_url": "static/logo.png",
     "qr_url": "static/img-1765202791197.png"
   },
   "dishes": [
-    {
-      "id": 3,
-      "name": "牛肉酸辣粉",
-      "chef": "雷云龙",
-      "up": 24,
-      "down": 6
-    },
-    {
-      "id": 1,
-      "name": "香酥鸡腿",
-      "chef": "丁科",
-      "up": 14,
-      "down": 0
-    },
-    {
-      "id": 4,
-      "name": "红烧肉",
-      "chef": "雷云龙",
-      "up": 9,
-      "down": 1
-    },
-    {
-      "id": 2,
-      "name": "葱烧大排",
-      "chef": "丁科",
-      "up": 6,
-      "down": 2
-    }
+    { "id": 1, "name": "铁板羊肉串", "chef": "兰达武", "up": 36, "down": 2 },
+    { "id": 2, "name": "川香辣子鱼", "chef": "彭刘锋", "up": 34, "down": 3 },
+    { "id": 3, "name": "小炒黄牛肉", "chef": "冯宝洋", "up": 30, "down": 4 },
+    { "id": 4, "name": "麻辣水煮鱼", "chef": "雷云龙", "up": 29, "down": 5 },
+    { "id": 5, "name": "孜然羊排", "chef": "兰达武", "up": 27, "down": 3 },
+    { "id": 6, "name": "香菇炖土鸡", "chef": "杜军", "up": 24, "down": 2 },
+    { "id": 7, "name": "河南烩面", "chef": "程辉", "up": 22, "down": 1 },
+    { "id": 8, "name": "番茄牛尾汤", "chef": "彭刘锋", "up": 21, "down": 2 },
+    { "id": 9, "name": "红枣银耳羹", "chef": "杜军", "up": 20, "down": 1 },
+    { "id": 10, "name": "酸菜粉", "chef": "雷云龙", "up": 19, "down": 2 },
+    { "id": 11, "name": "韭菜香干", "chef": "杜军", "up": 18, "down": 1 },
+    { "id": 12, "name": "萝卜牛腩卤", "chef": "程辉", "up": 18, "down": 1 },
+    { "id": 13, "name": "醪糟小汤圆", "chef": "兰达武", "up": 17, "down": 1 },
+    { "id": 14, "name": "清炒时蔬", "chef": "冯宝洋", "up": 17, "down": 0 },
+    { "id": 15, "name": "西红柿鸡蛋卤", "chef": "程辉", "up": 16, "down": 1 },
+    { "id": 16, "name": "烤红薯", "chef": "雷云龙", "up": 16, "down": 1 },
+    { "id": 17, "name": "面条", "chef": "程辉", "up": 15, "down": 0 },
+    { "id": 18, "name": "河粉", "chef": "程辉", "up": 14, "down": 1 },
+    { "id": 19, "name": "米粉", "chef": "程辉", "up": 13, "down": 0 },
+    { "id": 20, "name": "鲜榨西瓜汁", "chef": "彭刘锋", "up": 12, "down": 0 },
+    { "id": 21, "name": "鲜榨菠萝汁", "chef": "兰达武", "up": 12, "down": 1 },
+    { "id": 22, "name": "鲜榨番石榴汁", "chef": "冯宝洋", "up": 11, "down": 0 },
+    { "id": 23, "name": "馒头", "chef": "杜军", "up": 10, "down": 1 },
+    { "id": 24, "name": "杂粮饭", "chef": "雷云龙", "up": 10, "down": 0 }
   ],
   "chefs": [
     {
       "id": 1,
-      "name": "雷云龙",
-      "role": "厨师长",
+      "name": "彭刘锋",
+      "role": "本周主厨",
       "photo": "static/img-1765202958603.png",
-      "desc": "今天工作不努力，明天努力找工作。",
+      "desc": "拿手菜：川香辣子鱼、番茄牛尾汤，均衡麻辣与鲜甜。",
       "daily_rank": 1,
       "monthly_rank": 1,
-      "monthly_votes": 9
+      "monthly_votes": 86
     },
     {
       "id": 2,
-      "name": "丁科",
-      "role": "高级厨师",
+      "name": "兰达武",
+      "role": "本周主厨",
       "photo": "static/img-1765202963142.png",
-      "desc": "勤俭好学，用心做菜",
+      "desc": "明档招牌：铁板羊肉串、醪糟小汤圆，热气腾腾。",
       "daily_rank": 2,
       "monthly_rank": 2,
-      "monthly_votes": 0
+      "monthly_votes": 78
+    },
+    {
+      "id": 3,
+      "name": "雷云龙",
+      "role": "本周副厨",
+      "photo": "static/img-1765202791197.png",
+      "desc": "擅长麻辣水煮鱼与家常小炒，味型鲜亮。",
+      "daily_rank": 3,
+      "monthly_rank": 3,
+      "monthly_votes": 65
+    },
+    {
+      "id": 4,
+      "name": "冯宝洋",
+      "role": "本周副厨",
+      "photo": "static/img-1765202958603.png",
+      "desc": "掌勺本周牛肉档与时蔬，清爽不油腻。",
+      "daily_rank": 4,
+      "monthly_rank": 4,
+      "monthly_votes": 60
+    },
+    {
+      "id": 5,
+      "name": "杜军",
+      "role": "本周副厨",
+      "photo": "static/img-1765202963142.png",
+      "desc": "善做滋补炖品与素菜，汤羹甜品细腻温润。",
+      "daily_rank": 5,
+      "monthly_rank": 5,
+      "monthly_votes": 52
+    },
+    {
+      "id": 6,
+      "name": "程辉",
+      "role": "面档",
+      "photo": "static/img-1765202791197.png",
+      "desc": "今日面档：河南烩面、三款粉面及牛腩/番茄鸡蛋卤。",
+      "daily_rank": 6,
+      "monthly_rank": 6,
+      "monthly_votes": 48
     }
   ]
 }

@@ -3,24 +3,48 @@ const fs = require('fs');
 const path = require('path');
 const multer = require('multer'); // 引入图片上传处理库
 
-// const app = express();
-// const PORT = 3010;
-const PORT = process.env.PORT || 3010;
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`前台地址: http://localhost:${PORT}`);
-    console.log(`后台地址: http://localhost:${PORT}/admin.html`);
-});
+const app = express();
+const PORT = parseInt(process.env.PORT || '3000', 10);
 
+const DATA_DIR = process.env.DATA_DIR || '/data';
+const DEFAULT_DATA_FILE = path.join(__dirname, 'data.json');
+const DATA_FILE = path.join(DATA_DIR, 'data.json');
+const DEFAULT_STATIC_DIR = path.join(__dirname, 'static');
+const UPLOAD_DIR = path.join(DATA_DIR, 'static');
+
+function ensureDirectory(dir) {
+    fs.mkdirSync(dir, { recursive: true });
+}
+
+ensureDirectory(DATA_DIR);
+ensureDirectory(UPLOAD_DIR);
+
+if (!fs.existsSync(DATA_FILE)) {
+    if (fs.existsSync(DEFAULT_DATA_FILE)) {
+        fs.copyFileSync(DEFAULT_DATA_FILE, DATA_FILE);
+    } else {
+        fs.writeFileSync(DATA_FILE, JSON.stringify({ dishes: [], chefs: [], config: {} }, null, 2));
+    }
+}
+
+if (fs.existsSync(DEFAULT_STATIC_DIR)) {
+    fs.readdirSync(DEFAULT_STATIC_DIR).forEach((file) => {
+        const sourcePath = path.join(DEFAULT_STATIC_DIR, file);
+        const targetPath = path.join(UPLOAD_DIR, file);
+        if (!fs.existsSync(targetPath)) {
+            fs.copyFileSync(sourcePath, targetPath);
+        }
+    });
+}
 
 app.use(express.json());
 app.use(express.static(__dirname));
-
-const DATA_FILE = path.join(__dirname, 'data.json');
+app.use('/static', express.static(UPLOAD_DIR));
 
 // --- 配置图片上传 ---
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, 'static/') // 图片保存到 static 文件夹
+        cb(null, UPLOAD_DIR); // 图片保存到静态资源目录
     },
     filename: function (req, file, cb) {
         // 给图片起名：时间戳 + 原始后缀 (防止重名)
@@ -79,7 +103,7 @@ app.post('/api/vote', (req, res) => {
     });
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`前台地址: http://localhost:${PORT}`);
     console.log(`后台地址: http://localhost:${PORT}/admin.html`);
 
