@@ -181,18 +181,17 @@
             `).join('');
 
             // 5. 个人卡片 (显示日榜第一名)
-            const topChef = dailyChefs[0];
             document.getElementById('profile-card').innerHTML = `
                 <div class="profile-header">
-                    <img src="${topChef.photo}" class="chef-photo">
+                    <img src="static/img-1765202958603.png" class="chef-photo">
                     <div class="chef-details">
-                        <h4>${topChef.name} <span>${topChef.role}</span></h4>
-                        <p>${topChef.desc}</p>
+                        <h4>雷云龙 <span>厨师长</span></h4>
+                        <p>今天工作不努力，明天努力找工作。</p>
                     </div>
                 </div>
                 <div class="qr-section">
-                    <div class="qr-box"><img src="${config.qr_url}" class="qr-img"><span style="font-size:10px;color:#666">心声墙</span></div>
-                    <div class="qr-box"><img src="${config.qr_url}" class="qr-img"><span style="font-size:10px;color:#666">点赞榜</span></div>
+                    <div class="qr-box"><img src="static/img-1765202791197.png" class="qr-img"><span style="font-size:10px;color:#666">心声墙</span></div>
+                    <div class="qr-box"><img src="static/img-1765202791197.png" class="qr-img"><span style="font-size:10px;color:#666">点赞榜</span></div>
                 </div>
             `;
         }
