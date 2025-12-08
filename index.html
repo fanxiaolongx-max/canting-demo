@@ -5,48 +5,76 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>餐厅看板</title>
     <style>
-        /* CSS 样式 - 保持与图片一致的深绿色风格 */
+        /* --- 全局样式 --- */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Microsoft YaHei", sans-serif; }
         body { background-color: #f0f2f5; height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; }
-        .dashboard-container { width: 95%; height: 90%; background-color: #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: flex; flex-direction: column; border-radius: 8px; overflow: hidden; }
-        
-        /* 顶部 */
-        header { background-color: #0f6b48; color: rgba(255,255,255,0.8); padding: 10px 20px; font-size: 12px; display: flex; gap: 20px; }
-        .header-title-area { background-color: #0f6b48; color: #fff; padding: 10px 30px; font-size: 24px; font-weight: bold; }
-        
-        /* 布局 */
-        .main-content { flex: 1; display: flex; padding: 20px 30px; gap: 30px; position: relative; }
-        .section-title { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 15px; }
 
-        /* 左栏 */
-        .column-left { flex: 0 0 40%; display: flex; flex-direction: column; border-right: 1px solid #e0e0e0; padding-right: 20px; }
+        /* 主大屏容器 */
+        .dashboard-container {
+            width: 95%; height: 90%;
+            background-color: #fff;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: flex; flex-direction: column;
+            border-radius: 8px; overflow: hidden;
+        }
+
+        /* 顶部导航 */
+        header { background-color: #0f6b48; color: rgba(255,255,255,0.8); padding: 10px 20px; font-size: 12px; display: flex; gap: 20px; flex-shrink: 0; }
+        .header-title-area { background-color: #0f6b48; color: #fff; padding: 10px 30px; font-size: 24px; font-weight: bold; flex-shrink: 0; }
+
+        /* 主内容区布局 */
+        .main-content { flex: 1; display: flex; padding: 20px 30px; gap: 30px; position: relative; overflow: hidden; }
+        .section-title { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 15px; flex-shrink: 0; }
+
+        /* --- 左侧：菜品榜 --- */
+        .column-left { flex: 0 0 40%; display: flex; flex-direction: column; border-right: 1px solid #e0e0e0; padding-right: 20px; height: 100%; }
+        /* 列表滚动区 */
         .dish-list { overflow-y: auto; flex: 1; padding-right: 10px; }
         .dish-list::-webkit-scrollbar { width: 6px; }
         .dish-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
-        
-        .dish-item { display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid #f5f5f5; transition: 0.3s; }
+
+        .dish-item { display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid #f5f5f5; }
         .rank-badge { width: 24px; height: 24px; background-color: #999; color: #fff; text-align: center; line-height: 24px; font-size: 14px; margin-right: 15px; border-radius: 2px; }
         .rank-badge.top-3 { background-color: #0f6b48; }
         .dish-info { flex: 1; font-size: 15px; color: #333; }
         .dish-info span { color: #666; font-size: 13px; }
-        
+
         .vote-stats { display: flex; gap: 15px; color: #666; font-size: 14px; }
         .icon-group { display: flex; gap: 4px; cursor: pointer; align-items: center; }
         .icon-group:hover svg { fill: #0f6b48; }
         svg { width: 16px; height: 16px; fill: #999; transition: 0.2s; }
 
-        /* 中栏 */
-        .column-middle { flex: 0 0 30%; position: relative; }
+        /* --- 中间：日榜 --- */
+        .column-middle { flex: 0 0 30%; display: flex; flex-direction: column; position: relative; height: 100%; }
+        .chef-list-wrapper { flex: 1; overflow-y: auto; } /* 中间也让列表单独滚动 */
+
         .chef-list-item { display: flex; margin-bottom: 25px; }
         .chef-rank { font-size: 16px; color: #666; margin-right: 15px; padding-top: 10px; }
         .chef-photo { width: 60px; height: 70px; background-color: #eee; margin-right: 15px; object-fit: cover; border-radius: 4px; }
         .chef-details h4 { font-size: 16px; margin-bottom: 5px; color: #333; }
         .chef-details p { font-size: 12px; color: #666; line-height: 1.4; }
-        
-        .footer-location { position: absolute; bottom: 15px; font-size: 12px; color: #666; display: flex; gap: 5px; }
 
-        /* 右栏 */
-        .column-right { flex: 1; display: flex; flex-direction: column; position: relative;}
+        .footer-location { margin-top: auto; padding-top: 10px; font-size: 12px; color: #666; display: flex; gap: 5px; }
+
+        /* --- 右侧：关键修复区域 --- */
+        .column-right {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            height: 100%;
+            overflow: hidden; /* 禁止右侧整体滚动，防止撑破布局 */
+        }
+
+        /* 1. 列表区域：占据剩余空间，独立滚动 */
+        #chef-monthly-container {
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0; /* Firefox/Flex bug fix */
+            padding-bottom: 10px;
+        }
+        #chef-monthly-container::-webkit-scrollbar { width: 0; } /* 隐藏滚动条美观 */
+
         .month-rank-item { display: flex; align-items: center; margin-bottom: 20px; }
         .medal { width: 20px; margin-right: 10px; text-align: center; font-size: 18px; }
         .chef-mini-photo { width: 40px; height: 40px; background-color: #eee; border-radius: 50%; margin-right: 10px; object-fit: cover; }
@@ -54,27 +82,39 @@
         .month-details span { font-size: 12px; color: #999; }
         .month-score { margin-left: auto; font-size: 12px; color: #666; }
 
-
+        /* 2. 卡片区域：固定底部，不随列表滚动 */
         .profile-card {
-            margin-top: auto;      /* 保持让卡片尽量靠下 */
+            flex-shrink: 0; /* 禁止被压缩 */
             background-color: #f9f9f9;
             padding: 15px;
             border-radius: 8px;
             border: 1px solid #eee;
+            margin-top: 10px;
 
-            /* 关键修改在这里：加大底部距离，把卡片往上顶 */
-            margin-bottom: 100px;
+            /* 关键：底部留白给 Logo，避免重叠 */
+            margin-bottom: 60px;
+            position: relative;
+            z-index: 10;
         }
+
         .profile-header { display: flex; gap: 10px; margin-bottom: 10px; }
         .qr-section { display: flex; gap: 10px; }
         .qr-box { flex: 1; background: #fff; padding: 5px; display: flex; align-items: center; gap: 5px; border: 1px solid #eee; }
         .qr-img { width: 30px; height: 30px; object-fit: contain; }
-        
-        /* --- 修改点 1：调整了 Logo 父容器的对齐方式 --- */
-        .huawei-logo { position: absolute; bottom: 15px; right: 15px; display: flex; align-items: center; }
 
-        /* --- 修改点 2：加大了 Logo 图片的高度 --- */
+        /* 3. Logo 区域：绝对定位在右下角 */
+        .huawei-logo {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            display: flex;
+            align-items: center;
+            z-index: 999; /* 确保最上层 */
+            background: #fff; /* 防止背景透明文字重叠 */
+            padding: 5px;
+        }
         .logo-img { height: 50px; width: auto; }
+
     </style>
 </head>
 <body>
@@ -95,17 +135,21 @@
 
             <div class="column-middle">
                 <div class="section-title">人气厨师日榜</div>
-                <div id="chef-daily-container"></div>
+                <div class="chef-list-wrapper" id="chef-daily-container">
+                    </div>
                 <div class="footer-location" id="date-location">
-                    📍 2025-12-08
+                    📍 --
                 </div>
             </div>
 
             <div class="column-right">
                 <div class="section-title">人气厨师月榜</div>
-                <div id="chef-monthly-container"></div>
 
-                <div class="profile-card" id="profile-card"></div>
+                <div id="chef-monthly-container">
+                    </div>
+
+                <div class="profile-card" id="profile-card" style="display:none;">
+                    </div>
 
                 <div class="huawei-logo">
                     <img id="footer-logo" src="" class="logo-img">
@@ -119,17 +163,24 @@
         fetch('/api/data')
             .then(res => res.json())
             .then(data => renderPage(data))
-            .catch(err => console.error("请先运行 node server.js", err));
+            .catch(err => {
+                console.error("Fetch error:", err);
+                document.getElementById('page-title').innerText = "无法连接数据服务";
+            });
 
         function renderPage(data) {
-            const config = data.config;
-            const dishes = data.dishes; // 已经是后端排好序的
-            const chefs = data.chefs;
+            const config = data.config || {};
+            const dishes = data.dishes || [];
+            const chefs = data.chefs || [];
 
             // 1. 配置基础信息
-            document.getElementById('page-title').innerText = config.title;
-            document.getElementById('date-location').innerText = `📍 ${config.date}`;
-            document.getElementById('footer-logo').src = config.logo_url;
+            document.getElementById('page-title').innerText = config.title || "餐厅看板";
+            document.getElementById('date-location').innerText = `📍 ${config.date || ''}`;
+
+            // 处理 Logo 图片 (即使没数据也显示个默认占位，防止彻底消失)
+            const logoImg = document.getElementById('footer-logo');
+            logoImg.src = config.logo_url || 'static/logo.png';
+            logoImg.onerror = function() { this.style.display = 'none'; }; // 图片坏了就隐藏
 
             // 2. 渲染菜品列表
             const dishHtml = dishes.map((dish, index) => {
@@ -180,20 +231,28 @@
                 </div>
             `).join('');
 
-            // 5. 个人卡片 (显示日榜第一名)
-            document.getElementById('profile-card').innerHTML = `
-                <div class="profile-header">
-                    <img src="static/img-1765202958603.png" class="chef-photo">
-                    <div class="chef-details">
-                        <h4>雷云龙 <span>厨师长</span></h4>
-                        <p>今天工作不努力，明天努力找工作。</p>
+            // 5. 渲染个人卡片 (只要有厨师数据就显示)
+            const topChef = dailyChefs.length > 0 ? dailyChefs[0] : null;
+            const card = document.getElementById('profile-card');
+
+            if (topChef) {
+                card.style.display = "block"; // 显示卡片
+                card.innerHTML = `
+                    <div class="profile-header">
+                        <img src="${topChef.photo}" class="chef-photo" onerror="this.src='//via.placeholder.com/60'">
+                        <div class="chef-details">
+                            <h4>${topChef.name} <span>${topChef.role}</span></h4>
+                            <p>${topChef.desc}</p>
+                        </div>
                     </div>
-                </div>
-                <div class="qr-section">
-                    <div class="qr-box"><img src="static/img-1765202791197.png" class="qr-img"><span style="font-size:10px;color:#666">心声墙</span></div>
-                    <div class="qr-box"><img src="static/img-1765202791197.png" class="qr-img"><span style="font-size:10px;color:#666">点赞榜</span></div>
-                </div>
-            `;
+                    <div class="qr-section">
+                        <div class="qr-box"><img src="${config.qr_url}" class="qr-img"><span style="font-size:10px;color:#666">心声墙</span></div>
+                        <div class="qr-box"><img src="${config.qr_url}" class="qr-img"><span style="font-size:10px;color:#666">点赞榜</span></div>
+                    </div>
+                `;
+            } else {
+                card.style.display = "none";
+            }
         }
 
         // 投票功能
@@ -206,7 +265,6 @@
             .then(res => res.json())
             .then(res => {
                 if(res.success) {
-                    // 使用新的数据重新渲染页面
                     renderPage(res.newData);
                 }
             });
