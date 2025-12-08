@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>人气投票</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, "Microsoft YaHei", sans-serif; }
+        body { 
+            background: linear-gradient(135deg, #0f6b48 0%, #1a8d5f 100%); 
+            min-height: 100vh; 
+            padding: 20px;
+            padding-bottom: 40px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            padding: 20px 0 30px;
+        }
+        .header h1 { font-size: 28px; margin-bottom: 8px; }
+        .header p { font-size: 14px; opacity: 0.9; }
+
+        .tab-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .tab {
+            flex: 1;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .tab.active {
+            background: white;
+            color: #0f6b48;
+            font-weight: bold;
+        }
+
+        .vote-container {
+            display: none;
+        }
+        .vote-container.active {
+            display: block;
+        }
+
+        .dish-card, .chef-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .dish-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .dish-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+        .dish-chef {
+            font-size: 14px;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .rank-badge {
+            background: #ffd700;
+            color: #333;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .rank-badge.top3 { background: linear-gradient(135deg, #ffd700, #ffed4e); }
+
+        .vote-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .vote-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .vote-btn.up {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 2px solid #4caf50;
+        }
+        .vote-btn.up:active {
+            background: #4caf50;
+            color: white;
+            transform: scale(0.95);
+        }
+        .vote-btn.down {
+            background: #fce4ec;
+            color: #c2185b;
+            border: 2px solid #e91e63;
+        }
+        .vote-btn.down:active {
+            background: #e91e63;
+            color: white;
+            transform: scale(0.95);
+        }
+
+        /* 已投票状态 */
+        .vote-btn.voted {
+            background: #ff9800 !important;
+            color: white !important;
+            border-color: #ff9800 !important;
+        }
+        .vote-btn.voted:hover {
+            background: #f57c00 !important;
+        }
+        .vote-btn.voted:active {
+            background: #e65100 !important;
+            transform: scale(0.95);
+        }
+
+        .vote-count {
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .chef-card {
+            display: flex;
+            gap: 15px;
+        }
+        .chef-photo {
+            width: 80px;
+            height: 90px;
+            object-fit: cover;
+            border-radius: 8px;
+            background: #eee;
+        }
+        .chef-info {
+            flex: 1;
+        }
+        .chef-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .chef-role {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        .chef-desc {
+            font-size: 12px;
+            color: #999;
+            line-height: 1.4;
+        }
+        .chef-rank {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+        .rank-item {
+            background: #f5f5f5;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            z-index: 1000;
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            color: white;
+            padding: 40px;
+            font-size: 16px;
+        }
+
+        .empty {
+            text-align: center;
+            color: white;
+            padding: 60px 20px;
+        }
+        .empty-icon { font-size: 48px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🍽️ 餐厅人气投票</h1>
+        <p>为你喜欢的菜品和厨师投票吧！</p>
+    </div>
+
+    <div class="tab-bar">
+        <button class="tab active" onclick="switchTab('dishes')">菜品投票</button>
+        <button class="tab" onclick="switchTab('chefs')">厨师投票</button>
+    </div>
+
+    <div id="dishes-container" class="vote-container active">
+        <div class="loading">加载中...</div>
+    </div>
+
+    <div id="chefs-container" class="vote-container">
+        <div class="loading">加载中...</div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        let currentData = null;
+        let currentTab = 'dishes';
+
+        // 投票限制管理
+        const DAILY_LIMIT_DISHES = 3;
+        const DAILY_LIMIT_CHEFS = 3;
+
+        // 获取今天的投票记录
+        function getTodayVotes() {
+            const today = new Date().toDateString();
+            const stored = localStorage.getItem('vote_records');
+            if (!stored) {
+                return { 
+                    date: today, 
+                    dishUpCount: 0, 
+                    dishDownCount: 0,
+                    chefCount: 0, 
+                    votedDishesUp: [], 
+                    votedDishesDown: [],
+                    votedChefs: [],
+                    cancelDishUpCount: 0,
+                    cancelDishDownCount: 0,
+                    cancelChefCount: 0
+                };
+            }
+            
+            const records = JSON.parse(stored);
+            // 如果是新的一天，重置投票记录
+            if (records.date !== today) {
+                return { 
+                    date: today, 
+                    dishUpCount: 0, 
+                    dishDownCount: 0,
+                    chefCount: 0, 
+                    votedDishesUp: [], 
+                    votedDishesDown: [],
+                    votedChefs: [],
+                    cancelDishUpCount: 0,
+                    cancelDishDownCount: 0,
+                    cancelChefCount: 0
+                };
+            }
+            // 兼容旧格式
+            if (!records.dishUpCount) {
+                records.dishUpCount = records.dishCount || 0;
+                records.dishDownCount = 0;
+                records.votedDishesUp = records.votedDishes || [];
+                records.votedDishesDown = [];
+            }
+            // 初始化取消投票计数
+            if (records.cancelDishUpCount === undefined) {
+                records.cancelDishUpCount = 0;
+                records.cancelDishDownCount = 0;
+                records.cancelChefCount = 0;
+            }
+            return records;
+        }
+
+        // 保存投票记录（区分点赞和踩）
+        function saveVoteRecord(type, itemId) {
+            const records = getTodayVotes();
+            if (type === 'dish-up') {
+                records.dishUpCount = (records.dishUpCount || 0) + 1;
+                if (!records.votedDishesUp) records.votedDishesUp = [];
+                if (!records.votedDishesUp.includes(itemId)) {
+                    records.votedDishesUp.push(itemId);
+                }
+            } else if (type === 'dish-down') {
+                records.dishDownCount = (records.dishDownCount || 0) + 1;
+                if (!records.votedDishesDown) records.votedDishesDown = [];
+                if (!records.votedDishesDown.includes(itemId)) {
+                    records.votedDishesDown.push(itemId);
+                }
+            } else if (type === 'chef') {
+                records.chefCount = (records.chefCount || 0) + 1;
+                if (!records.votedChefs) records.votedChefs = [];
+                if (!records.votedChefs.includes(itemId)) {
+                    records.votedChefs.push(itemId);
+                }
+            }
+            localStorage.setItem('vote_records', JSON.stringify(records));
+        }
+
+        // 保存取消投票记录（取消后可以重新投票）
+        function saveCancelRecord(type, itemId) {
+            const records = getTodayVotes();
+            if (type === 'dish-up') {
+                records.cancelDishUpCount = (records.cancelDishUpCount || 0) + 1;
+                // 从投票列表中移除，允许重新投票
+                if (records.votedDishesUp) {
+                    records.votedDishesUp = records.votedDishesUp.filter(id => id !== itemId);
+                }
+                // 减少投票计数
+                records.dishUpCount = Math.max(0, (records.dishUpCount || 0) - 1);
+            } else if (type === 'dish-down') {
+                records.cancelDishDownCount = (records.cancelDishDownCount || 0) + 1;
+                if (records.votedDishesDown) {
+                    records.votedDishesDown = records.votedDishesDown.filter(id => id !== itemId);
+                }
+                records.dishDownCount = Math.max(0, (records.dishDownCount || 0) - 1);
+            } else if (type === 'chef') {
+                records.cancelChefCount = (records.cancelChefCount || 0) + 1;
+                if (records.votedChefs) {
+                    records.votedChefs = records.votedChefs.filter(id => id !== itemId);
+                }
+                records.chefCount = Math.max(0, (records.chefCount || 0) - 1);
+            }
+            localStorage.setItem('vote_records', JSON.stringify(records));
+        }
+
+        // 检查是否可以取消投票（每天最多3次）
+        function canCancel(type) {
+            const records = getTodayVotes();
+            if (type === 'dish-up') {
+                return (records.cancelDishUpCount || 0) < 3;
+            } else if (type === 'dish-down') {
+                return (records.cancelDishDownCount || 0) < 3;
+            } else if (type === 'chef') {
+                return (records.cancelChefCount || 0) < 3;
+            }
+            return false;
+        }
+
+        // 检查是否可以投票（基于计数）
+        function canVote(type) {
+            const records = getTodayVotes();
+            if (type === 'dish-up') {
+                return (records.dishUpCount || 0) < DAILY_LIMIT_DISHES;
+            } else if (type === 'dish-down') {
+                return (records.dishDownCount || 0) < DAILY_LIMIT_DISHES;
+            } else if (type === 'chef') {
+                return (records.chefCount || 0) < DAILY_LIMIT_CHEFS;
+            }
+            return false;
+        }
+
+        // 获取剩余投票数（基于计数）
+        function getRemainingVotes(type) {
+            const records = getTodayVotes();
+            if (type === 'dish-up') {
+                return DAILY_LIMIT_DISHES - (records.dishUpCount || 0);
+            } else if (type === 'dish-down') {
+                return DAILY_LIMIT_DISHES - (records.dishDownCount || 0);
+            } else if (type === 'chef') {
+                return DAILY_LIMIT_CHEFS - (records.chefCount || 0);
+            }
+            return 0;
+        }
+
+        // 加载数据
+        function loadData() {
+            fetch('/api/data')
+                .then(res => res.json())
+                .then(data => {
+                    currentData = data;
+                    renderDishes();
+                    renderChefs();
+                    updateVoteStatus();
+                })
+                .catch(err => {
+                    showToast('加载失败，请刷新重试');
+                    console.error(err);
+                });
+        }
+
+        // 更新投票状态显示
+        function updateVoteStatus() {
+            const dishUpRemaining = getRemainingVotes('dish-up');
+            const dishDownRemaining = getRemainingVotes('dish-down');
+            const chefRemaining = getRemainingVotes('chef');
+            
+            // 可以在标题处显示剩余票数
+            const dishesHeader = document.querySelector('.tab-bar .tab:first-child');
+            const chefsHeader = document.querySelector('.tab-bar .tab:last-child');
+            
+            if (dishesHeader) {
+                dishesHeader.innerHTML = `菜品投票 <span style="font-size:11px;opacity:0.8">(👍${dishUpRemaining} 👎${dishDownRemaining})</span>`;
+            }
+            if (chefsHeader) {
+                chefsHeader.innerHTML = `厨师投票 <span style="font-size:11px;opacity:0.8">(剩余${chefRemaining}票)</span>`;
+            }
+        }
+
+        // 渲染菜品
+        function renderDishes() {
+            const container = document.getElementById('dishes-container');
+            const dishes = currentData.dishes || [];
+            
+            if (dishes.length === 0) {
+                container.innerHTML = '<div class="empty"><div class="empty-icon">📭</div><p>暂无菜品</p></div>';
+                return;
+            }
+
+            // 检查哪些菜品已投票
+            const records = getTodayVotes();
+
+            container.innerHTML = dishes.map((dish, index) => {
+                const hasVotedUp = records.votedDishesUp && records.votedDishesUp.includes(dish.id);
+                const hasVotedDown = records.votedDishesDown && records.votedDishesDown.includes(dish.id);
+                const hasAnyVote = hasVotedUp || hasVotedDown;
+                const canCancelUp = hasVotedUp && canCancel('dish-up');
+                const canCancelDown = hasVotedDown && canCancel('dish-down');
+                
+                return `
+                    <div class="dish-card" style="${hasAnyVote ? 'background: #f0f9f0; border: 2px solid #4caf50;' : ''}">
+                        <div class="dish-header">
+                            <div>
+                                <div class="dish-name">${dish.name} ${hasVotedUp ? '✅👍' : ''}${hasVotedDown ? '✅👎' : ''}</div>
+                                <div class="dish-chef">👨‍🍳 ${dish.chef}</div>
+                            </div>
+                            <div class="rank-badge ${index < 3 ? 'top3' : ''}">${index + 1}</div>
+                        </div>
+                        <div class="vote-buttons">
+                            <button class="vote-btn up ${hasVotedUp ? 'voted' : ''}" onclick="vote(${dish.id}, 'up')" ${hasVotedUp && !canCancelUp ? 'style="opacity: 0.5; cursor: not-allowed;" title="今日取消次数已用完"' : ''}>
+                                ${hasVotedUp ? '↩️' : '👍'} <span class="vote-count">${dish.up}</span>
+                            </button>
+                            <button class="vote-btn down ${hasVotedDown ? 'voted' : ''}" onclick="vote(${dish.id}, 'down')" ${hasVotedDown && !canCancelDown ? 'style="opacity: 0.5; cursor: not-allowed;" title="今日取消次数已用完"' : ''}>
+                                ${hasVotedDown ? '↩️' : '👎'} <span class="vote-count">${dish.down}</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 渲染厨师
+        function renderChefs() {
+            const container = document.getElementById('chefs-container');
+            const chefs = [...(currentData.chefs || [])].sort((a,b) => a.daily_rank - b.daily_rank);
+            
+            if (chefs.length === 0) {
+                container.innerHTML = '<div class="empty"><div class="empty-icon">👨‍🍳</div><p>暂无厨师</p></div>';
+                return;
+            }
+
+            // 检查哪些厨师已投票
+            const records = getTodayVotes();
+
+            container.innerHTML = chefs.map(chef => {
+                const hasVoted = records.votedChefs && records.votedChefs.includes(chef.id);
+                const canCancelChef = hasVoted && canCancel('chef');
+                return `
+                    <div class="chef-card" style="position: relative;">
+                        <img src="${chef.photo}" class="chef-photo" onerror="this.src='static/logo.png'">
+                        <div class="chef-info">
+                            <div class="chef-name">${chef.name}</div>
+                            <div class="chef-role">${chef.role}</div>
+                            <div class="chef-desc">${chef.desc}</div>
+                            <div class="chef-rank">
+                                <span class="rank-item">日榜 #${chef.daily_rank}</span>
+                                <span class="rank-item">月榜 #${chef.monthly_rank}</span>
+                                <span class="rank-item">月票 ${chef.monthly_votes}</span>
+                            </div>
+                            <button class="vote-btn up ${hasVoted ? 'voted' : ''}" style="margin-top: 10px; width: 100%;" onclick="voteChef(${chef.id})" ${hasVoted && !canCancelChef ? 'style="background: #ccc; cursor: not-allowed; margin-top: 10px; width: 100%;" title="今日取消次数已用完"' : ''}>
+                                ${hasVoted ? '↩️ 取消投票' : '👍 为TA投票'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 切换标签
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.vote-container').forEach(c => c.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tab + '-container').classList.add('active');
+        }
+
+        // 菜品投票（支持取消）
+        function vote(dishId, type) {
+            const records = getTodayVotes();
+            const hasVotedUp = records.votedDishesUp && records.votedDishesUp.includes(dishId);
+            const hasVotedDown = records.votedDishesDown && records.votedDishesDown.includes(dishId);
+            
+            // 判断是投票还是取消
+            const isVoting = (type === 'up' && !hasVotedUp) || (type === 'down' && !hasVotedDown);
+            
+            if (isVoting) {
+                // 执行投票
+                // 检查投票限制
+                if (type === 'up') {
+                    if (!canVote('dish-up')) {
+                        showToast(`⚠️ 今日点赞已达上限（每天${DAILY_LIMIT_DISHES}票）`);
+                        return;
+                    }
+                } else if (type === 'down') {
+                    if (!canVote('dish-down')) {
+                        showToast(`⚠️ 今日踩已达上限（每天${DAILY_LIMIT_DISHES}票）`);
+                        return;
+                    }
+                }
+
+                fetch('/api/vote', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ dishId, type })
+                })
+                .then(res => res.json())
+                .then(res => {
+                    if (res.success) {
+                        currentData = res.newData;
+                        
+                        // 记录投票
+                        if (type === 'up') {
+                            saveVoteRecord('dish-up', dishId);
+                        } else if (type === 'down') {
+                            saveVoteRecord('dish-down', dishId);
+                        }
+                        
+                        // 重新渲染
+                        renderDishes();
+                        updateVoteStatus();
+                        
+                        // 显示提示
+                        if (type === 'up') {
+                            const remaining = getRemainingVotes('dish-up');
+                            showToast(`👍 点赞成功！今日还剩${remaining}票`);
+                        } else {
+                            const remaining = getRemainingVotes('dish-down');
+                            showToast(`👎 已记录！今日还剩${remaining}票`);
+                        }
+                    } else {
+                        showToast('投票失败');
+                    }
+                })
+                .catch(err => {
+                    showToast('网络错误');
+                    console.error(err);
+                });
+            } else {
+                // 执行取消投票
+                if (type === 'up' && !hasVotedUp) return;
+                if (type === 'down' && !hasVotedDown) return;
+                
+                // 检查取消限制
+                if (!canCancel(`dish-${type}`)) {
+                    showToast(`⚠️ 今日取消投票已达上限（每天3次）`);
+                    return;
+                }
+
+                fetch('/api/vote-cancel', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ dishId, type })
+                })
+                .then(res => res.json())
+                .then(res => {
+                    if (res.success) {
+                        currentData = res.newData;
+                        
+                        // 记录取消投票
+                        saveCancelRecord(`dish-${type}`, dishId);
+                        
+                        // 重新渲染
+                        renderDishes();
+                        updateVoteStatus();
+                        
+                        showToast(`↩️ 已取消${type === 'up' ? '点赞' : '踩'}`);
+                    } else {
+                        showToast('取消失败');
+                    }
+                })
+                .catch(err => {
+                    showToast('网络错误');
+                    console.error(err);
+                });
+            }
+        }
+
+        // 厨师投票（支持取消）
+        function voteChef(chefId) {
+            const records = getTodayVotes();
+            const hasVoted = records.votedChefs && records.votedChefs.includes(chefId);
+            
+            if (!hasVoted) {
+                // 执行投票
+                // 检查投票限制
+                if (!canVote('chef')) {
+                    showToast(`⚠️ 今日厨师投票已达上限（每天${DAILY_LIMIT_CHEFS}票）`);
+                    return;
+                }
+
+                fetch('/api/vote-chef', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chefId })
+                })
+                .then(res => res.json())
+                .then(res => {
+                    if (res.success) {
+                        currentData = res.newData;
+                        
+                        // 记录投票
+                        saveVoteRecord('chef', chefId);
+                        
+                        // 重新渲染
+                        renderChefs();
+                        updateVoteStatus();
+                        const remaining = getRemainingVotes('chef');
+                        showToast(`👍 投票成功！今日还剩${remaining}票`);
+                    } else {
+                        showToast('投票失败');
+                    }
+                })
+                .catch(err => {
+                    showToast('网络错误');
+                    console.error(err);
+                });
+            } else {
+                // 执行取消投票
+                // 检查取消限制
+                if (!canCancel('chef')) {
+                    showToast(`⚠️ 今日取消投票已达上限（每天3次）`);
+                    return;
+                }
+
+                fetch('/api/vote-chef-cancel', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chefId })
+                })
+                .then(res => res.json())
+                .then(res => {
+                    if (res.success) {
+                        currentData = res.newData;
+                        
+                        // 记录取消投票
+                        saveCancelRecord('chef', chefId);
+                        
+                        // 重新渲染
+                        renderChefs();
+                        updateVoteStatus();
+                        showToast('↩️ 已取消投票');
+                    } else {
+                        showToast('取消失败');
+                    }
+                })
+                .catch(err => {
+                    showToast('网络错误');
+                    console.error(err);
+                });
+            }
+        }
+
+
+        // 显示提示
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 2000);
+        }
+
+        // 页面加载
+        loadData();
+    </script>
+</body>
+</html>
+
+

@@ -5,293 +5,947 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>后台管理系统</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Microsoft YaHei", sans-serif; }
-        body { background-color: #f0f2f5; padding-bottom: 80px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, "Microsoft YaHei", sans-serif; }
+        body { background-color: #f0f2f5; min-height: 100vh; }
 
         /* 顶部导航 */
-        header { background-color: #0f6b48; color: #fff; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        header { 
+            background: linear-gradient(135deg, #0f6b48 0%, #1a8d5f 100%);
+            color: #fff; 
+            padding: 15px 30px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
         h1 { font-size: 20px; font-weight: bold; }
-        .back-link { color: rgba(255,255,255,0.8); text-decoration: none; font-size: 14px; }
-        .back-link:hover { color: #fff; }
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .btn-header {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: 0.3s;
+        }
+        .btn-header:hover {
+            background: rgba(255,255,255,0.3);
+        }
 
-        /* 内容容器 */
-        .container { max-width: 1000px; margin: 20px auto; padding: 0 20px; }
+        /* 主容器 */
+        .container { max-width: 1400px; margin: 20px auto; padding: 0 20px; }
 
-        /* 卡片通用样式 */
-        .card { background: #fff; border-radius: 8px; padding: 25px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .card-title { font-size: 18px; color: #0f6b48; border-bottom: 2px solid #f0f2f5; padding-bottom: 10px; margin-bottom: 20px; font-weight: bold; }
+        /* 卡片 */
+        .card { 
+            background: #fff; 
+            border-radius: 8px; 
+            padding: 25px; 
+            margin-bottom: 20px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .card-title { 
+            font-size: 18px; 
+            color: #0f6b48; 
+            border-bottom: 2px solid #f0f2f5; 
+            padding-bottom: 10px; 
+            margin-bottom: 20px; 
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-        /* 表单控件 */
-        .form-group { margin-bottom: 15px; display: flex; align-items: center; }
-        .form-group label { width: 100px; color: #666; font-size: 14px; font-weight: bold; }
-        .form-input { flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; outline: none; transition: 0.3s; }
-        .form-input:focus { border-color: #0f6b48; }
+        /* 配置表单 */
+        .form-row {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+        .form-label {
+            font-weight: bold;
+            color: #666;
+        }
+        .form-input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #0f6b48;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
-        /* 图片上传区 */
-        .img-upload-box { display: flex; align-items: center; gap: 15px; }
-        .preview-img { width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #eee; background: #f9f9f9; }
-        .file-btn { position: relative; overflow: hidden; display: inline-block; cursor: pointer; color: #0f6b48; font-size: 13px; text-decoration: underline; }
-        .file-btn input { position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-
-        /* 列表管理（菜品/厨师） */
-        .list-item { display: flex; gap: 15px; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 15px; align-items: flex-start; }
-        .list-item:last-child { border-bottom: none; margin-bottom: 0; }
-        .item-content { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .full-width { grid-column: span 2; }
+        /* 表格样式 */
+        .table-container {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        thead {
+            background: #f8f9fa;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+        th {
+            font-weight: 600;
+            color: #495057;
+            font-size: 13px;
+            text-transform: uppercase;
+        }
+        td {
+            font-size: 14px;
+            color: #212529;
+        }
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+        .table-input {
+            width: 100%;
+            padding: 6px 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        .table-input:focus {
+            outline: none;
+            border-color: #0f6b48;
+        }
+        .table-input-small {
+            width: 60px;
+        }
 
         /* 按钮 */
-        .btn-add { display: block; width: 100%; padding: 10px; text-align: center; border: 1px dashed #0f6b48; color: #0f6b48; background: #f0fcf8; border-radius: 4px; cursor: pointer; margin-top: 10px; }
-        .btn-add:hover { background: #e0f5ee; }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: 0.3s;
+        }
+        .btn-primary {
+            background: #0f6b48;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #0b5539;
+        }
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #218838;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
 
-        .btn-del { color: #cc0000; font-size: 12px; cursor: pointer; margin-top: 5px; }
+        /* 图片预览 */
+        .img-preview {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 4px;
+            cursor: pointer;
+        }
 
-        /* 底部悬浮保存条 */
-        .save-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; padding: 15px; box-shadow: 0 -5px 15px rgba(0,0,0,0.1); display: flex; justify-content: flex-end; align-items: center; gap: 20px; z-index: 100; }
-        .status-msg { color: #666; font-size: 14px; }
-        .btn-save { background-color: #0f6b48; color: white; border: none; padding: 12px 40px; border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .btn-save:hover { background-color: #0b5539; }
+        /* 提示信息 */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 4px;
+            z-index: 1000;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(400px); }
+            to { transform: translateX(0); }
+        }
+        .toast.success {
+            background: #28a745;
+        }
+        .toast.error {
+            background: #dc3545;
+        }
 
-        /* 响应式调整 */
-        @media (max-width: 600px) {
-            .item-content { grid-template-columns: 1fr; }
+        /* 操作按钮列 */
+        .action-btns {
+            display: flex;
+            gap: 5px;
+        }
+
+        /* 批量导入/导出 */
+        .bulk-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        /* 文件上传 */
+        .file-input {
+            display: none;
+        }
+
+        /* 帮助提示 */
+        .help-text {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        /* ===== 响应式设计 - 手机端适配 ===== */
+        @media (max-width: 768px) {
+            body {
+                overflow-x: hidden;
+            }
+            
+            /* 顶部导航 */
+            header {
+                flex-direction: column;
+                gap: 10px;
+                padding: 12px 15px;
+            }
+            
+            h1 {
+                font-size: 18px;
+            }
+            
+            .header-actions {
+                width: 100%;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+            }
+            
+            .btn-header {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+            
+            /* 容器 */
+            .container {
+                padding: 0 15px;
+            }
+            
+            /* 卡片 */
+            .card {
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+            
+            .card-title {
+                font-size: 16px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            /* 表单 */
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            
+            .form-label {
+                font-size: 13px;
+            }
+            
+            .form-input {
+                font-size: 13px;
+            }
+            
+            /* 批量操作按钮 */
+            .bulk-actions {
+                flex-wrap: wrap;
+                width: 100%;
+                margin-top: 10px;
+            }
+            
+            .bulk-actions .btn {
+                flex: 1;
+                min-width: 120px;
+            }
+            
+            /* 表格容器 */
+            .table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            table {
+                min-width: 600px;
+                font-size: 12px;
+            }
+            
+            th, td {
+                padding: 8px 6px;
+                font-size: 12px;
+            }
+            
+            th {
+                font-size: 11px;
+            }
+            
+            .table-input {
+                padding: 4px 6px;
+                font-size: 12px;
+            }
+            
+            .img-preview {
+                width: 40px;
+                height: 40px;
+            }
+            
+            /* 按钮 */
+            .btn {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+            
+            .action-btns {
+                flex-direction: column;
+                gap: 3px;
+            }
+            
+            /* 提示框 */
+            .toast {
+                right: 10px;
+                left: 10px;
+                padding: 12px 15px;
+                font-size: 13px;
+            }
+        }
+        
+        /* 超小屏幕 */
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 16px;
+            }
+            
+            .card {
+                padding: 12px;
+            }
+            
+            .card-title {
+                font-size: 15px;
+            }
+            
+            table {
+                min-width: 500px;
+                font-size: 11px;
+            }
+            
+            th, td {
+                padding: 6px 4px;
+            }
+            
+            .bulk-actions .btn {
+                width: 100%;
+            }
+            
+            .btn-header {
+                font-size: 11px;
+                padding: 5px 10px;
+            }
         }
     </style>
 </head>
 <body>
-
     <header>
-        <h1>餐厅数据后台管理</h1>
-        <a href="/" target="_blank" class="back-link">查看前台页面 &rarr;</a>
+        <h1>🍽️ 餐厅看板后台管理系统</h1>
+        <div class="header-actions">
+            <button class="btn-header" onclick="exportAllData()">📥 导出所有数据</button>
+            <button class="btn-header" onclick="resetToken()">🔑 重置密钥</button>
+            <a href="/" target="_blank" class="btn-header" style="text-decoration: none;">查看前台 →</a>
+        </div>
     </header>
 
     <div class="container">
-
+        <!-- 全局配置 -->
         <div class="card">
-            <div class="card-title">全局配置 (Config)</div>
-            <div class="form-group">
-                <label>页面标题</label>
-                <input type="text" class="form-input" id="cfg-title">
+            <div class="card-title">⚙️ 全局配置</div>
+            
+            <div class="form-row">
+                <label class="form-label">页面标题</label>
+                <input type="text" class="form-input" id="config-title" placeholder="例如：埃及尼罗河餐厅全接触">
             </div>
-            <div class="form-group">
-                <label>日期/位置</label>
-                <input type="text" class="form-input" id="cfg-date">
-            </div>
-            <div class="form-group">
-                <label>行政Logo</label>
-                <div class="img-upload-box">
-                    <img src="" class="preview-img" id="preview-logo">
-                    <div class="file-btn">
-                        更换图片...
-                        <input type="file" onchange="uploadFile(this, 'cfg-logo-val', 'preview-logo')">
+            
+            <div class="form-row">
+                <label class="form-label">日期/位置</label>
+                <div style="flex: 1;">
+                    <input type="text" class="form-input" id="config-date" placeholder="例如：2025-12-08 午餐">
+                    <div class="checkbox-group" style="margin-top: 8px;">
+                        <input type="checkbox" id="config-auto-date">
+                        <label for="config-auto-date">自动生成当前日期</label>
                     </div>
-                    <input type="hidden" id="cfg-logo-val"> </div>
-            </div>
-            <div class="form-group">
-                <label>二维码</label>
-                <div class="img-upload-box">
-                    <img src="" class="preview-img" id="preview-qr">
-                    <div class="file-btn">
-                        更换图片...
-                        <input type="file" onchange="uploadFile(this, 'cfg-qr-val', 'preview-qr')">
-                    </div>
-                    <input type="hidden" id="cfg-qr-val">
+                    <div class="help-text">勾选后将自动显示当前日期和时间段（午餐/晚餐）</div>
                 </div>
             </div>
+            
+            <button class="btn btn-primary" onclick="saveConfig()">💾 保存配置</button>
         </div>
 
+        <!-- 菜品管理 -->
         <div class="card">
-            <div class="card-title">菜品列表 (Dishes)</div>
-            <div id="dishes-list"></div>
-            <div class="btn-add" onclick="addDish()">+ 新增一道菜</div>
+            <div class="card-title">
+                <span>🍽️ 菜品管理</span>
+                <div class="bulk-actions">
+                    <button class="btn btn-success" onclick="addDish()">➕ 新增菜品</button>
+                    <button class="btn btn-secondary" onclick="importDishes()">📤 批量导入</button>
+                    <button class="btn btn-secondary" onclick="exportDishes()">📥 导出表格</button>
+                </div>
+            </div>
+            
+            <div class="table-container">
+                <table id="dishes-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">ID</th>
+                            <th>菜品名称</th>
+                            <th>厨师</th>
+                            <th style="width: 80px;">点赞数</th>
+                            <th style="width: 80px;">踩数</th>
+                            <th style="width: 120px;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dishes-tbody">
+                        <tr><td colspan="6" style="text-align: center; color: #999;">加载中...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
+        <!-- 厨师管理 -->
         <div class="card">
-            <div class="card-title">厨师列表 (Chefs)</div>
-            <div id="chefs-list"></div>
-            <div class="btn-add" onclick="addChef()">+ 新增一位厨师</div>
+            <div class="card-title">
+                <span>👨‍🍳 厨师管理</span>
+                <div class="bulk-actions">
+                    <button class="btn btn-success" onclick="addChef()">➕ 新增厨师</button>
+                    <button class="btn btn-secondary" onclick="importChefs()">📤 批量导入</button>
+                    <button class="btn btn-secondary" onclick="exportChefs()">📥 导出表格</button>
+                </div>
+            </div>
+            
+            <div class="table-container">
+                <table id="chefs-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">ID</th>
+                            <th style="width: 60px;">照片</th>
+                            <th>姓名</th>
+                            <th>职位</th>
+                            <th>简介</th>
+                            <th style="width: 70px;">日榜</th>
+                            <th style="width: 70px;">月榜</th>
+                            <th style="width: 70px;">月票</th>
+                            <th style="width: 120px;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="chefs-tbody">
+                        <tr><td colspan="9" style="text-align: center; color: #999;">加载中...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
-
     </div>
 
-    <div class="save-bar">
-        <span class="status-msg" id="status-msg"></span>
-        <button class="btn-save" onclick="saveAll()">保存所有修改</button>
-    </div>
+    <div class="toast" id="toast"></div>
+
+    <!-- 隐藏的文件上传输入 -->
+    <input type="file" id="file-input-dishes" class="file-input" accept=".json,.csv" onchange="handleDishesImport(event)">
+    <input type="file" id="file-input-chefs" class="file-input" accept=".json,.csv" onchange="handleChefsImport(event)">
+    <input type="file" id="file-input-photo" class="file-input" accept="image/*">
 
     <script>
-        let currentData = {};
+        let adminToken = localStorage.getItem('admin_token') || '';
+        let currentPhotoTarget = null;
 
-        // 页面加载时获取数据
-        fetch('/api/data')
-            .then(res => res.json())
-            .then(data => {
-                currentData = data;
-                initForm();
-            })
-            .catch(err => {
-                document.getElementById('status-msg').innerText = "❌ 无法连接到后台服务，请检查 server.js 是否运行";
-                document.getElementById('status-msg').style.color = "red";
-                console.error("Fetch Error:", err);
-            });
-
-        // 初始化表单
-        function initForm() {
-            // Config
-            document.getElementById('cfg-title').value = currentData.config.title || '';
-            document.getElementById('cfg-date').value = currentData.config.date || '';
-
-            // Logo & QR (显示图片和路径)
-            document.getElementById('preview-logo').src = currentData.config.logo_url || '';
-            document.getElementById('cfg-logo-val').value = currentData.config.logo_url || '';
-
-            document.getElementById('preview-qr').src = currentData.config.qr_url || '';
-            document.getElementById('cfg-qr-val').value = currentData.config.qr_url || '';
-
-            renderDishes();
-            renderChefs();
+        // 获取请求头
+        function getHeaders() {
+            return {
+                'Content-Type': 'application/json',
+                'x-admin-token': adminToken
+            };
         }
 
-        // 渲染菜品
-        function renderDishes() {
-            const container = document.getElementById('dishes-list');
-            container.innerHTML = '';
-            currentData.dishes.forEach((dish, index) => {
-                const div = document.createElement('div');
-                div.className = 'list-item';
-                div.innerHTML = `
-                    <div class="item-content">
-                        <input type="text" class="form-input" placeholder="菜名" value="${dish.name}" oninput="currentData.dishes[${index}].name = this.value">
-                        <input type="text" class="form-input" placeholder="厨师" value="${dish.chef}" oninput="currentData.dishes[${index}].chef = this.value">
-                        <input type="number" class="form-input" placeholder="赞" value="${dish.up}" oninput="currentData.dishes[${index}].up = parseInt(this.value || 0)">
-                        <input type="number" class="form-input" placeholder="踩" value="${dish.down}" oninput="currentData.dishes[${index}].down = parseInt(this.value || 0)">
-                    </div>
-                    <div class="btn-del" onclick="removeDish(${index})">删除</div>
-                `;
-                container.appendChild(div);
-            });
+        // 初始化
+        function init() {
+            if (!adminToken) {
+                promptForToken();
+                return;
+            }
+            loadAll();
         }
 
-        // 渲染厨师
-        function renderChefs() {
-            const container = document.getElementById('chefs-list');
-            container.innerHTML = '';
-            currentData.chefs.forEach((chef, index) => {
-                const div = document.createElement('div');
-                div.className = 'list-item';
-                div.innerHTML = `
-                    <div class="img-upload-box">
-                        <img src="${chef.photo}" class="preview-img" id="chef-img-${index}" onerror="this.src='static/logo.png'">
-                        <div style="font-size:12px; text-align:center;">
-                            <div class="file-btn">换图<input type="file" onchange="uploadFile(this, null, 'chef-img-${index}', ${index})"></div>
-                        </div>
-                    </div>
-                    <div class="item-content" style="flex:1">
-                        <input type="text" class="form-input" placeholder="姓名" value="${chef.name}" oninput="currentData.chefs[${index}].name = this.value">
-                        <input type="text" class="form-input" placeholder="职位" value="${chef.role}" oninput="currentData.chefs[${index}].role = this.value">
-                        <textarea class="form-input full-width" rows="2" placeholder="简介" oninput="currentData.chefs[${index}].desc = this.value">${chef.desc}</textarea>
-                        <div style="display:flex; gap:10px;" class="full-width">
-                             <label>日榜名次: <input type="number" value="${chef.daily_rank}" style="width:50px" oninput="currentData.chefs[${index}].daily_rank = parseInt(this.value || 0)"></label>
-                             <label>月榜名次: <input type="number" value="${chef.monthly_rank}" style="width:50px" oninput="currentData.chefs[${index}].monthly_rank = parseInt(this.value || 0)"></label>
-                             <label>月票数: <input type="number" value="${chef.monthly_votes}" style="width:50px" oninput="currentData.chefs[${index}].monthly_votes = parseInt(this.value || 0)"></label>
-                        </div>
-                    </div>
-                    <div class="btn-del" onclick="removeChef(${index})">删除</div>
-                `;
-                container.appendChild(div);
-            });
+        // 提示输入密钥
+        function promptForToken() {
+            const token = prompt('请输入管理密钥（默认: demo2024）：', 'demo2024');
+            if (token) {
+                adminToken = token;
+                localStorage.setItem('admin_token', token);
+                loadAll();
+            } else {
+                showToast('需要访问密钥才能使用后台管理', 'error');
+            }
         }
 
-        // --- 逻辑操作 ---
-
-        function addDish() {
-            // 使用当前时间戳作为唯一ID
-            currentData.dishes.push({ id: Date.now(), name: "新菜品", chef: "新厨师", up: 0, down: 0 });
-            renderDishes();
-        }
-        function removeDish(index) {
-            currentData.dishes.splice(index, 1);
-            renderDishes();
-        }
-
-        function addChef() {
-            currentData.chefs.push({ id: Date.now(), name: "新厨师", role: "厨师", photo: "static/logo.png", desc: "请修改简介", daily_rank: 99, monthly_rank: 99, monthly_votes: 0 });
-            renderChefs();
-        }
-        function removeChef(index) {
-            currentData.chefs.splice(index, 1);
-            renderChefs();
+        // 加载所有数据
+        async function loadAll() {
+            try {
+                await loadConfig();
+                await loadDishes();
+                await loadChefs();
+            } catch (err) {
+                console.error('加载失败:', err);
+                showToast('加载失败，请检查网络连接', 'error');
+            }
         }
 
-        // --- 核心：文件上传 ---
-        function uploadFile(input, hiddenInputId, imgPreviewId, chefIndex = null) {
-            const file = input.files[0];
+        // 加载配置
+        async function loadConfig() {
+            try {
+                const res = await fetch('/api/admin/config', { headers: getHeaders() });
+                if (!res.ok) throw new Error('获取配置失败');
+                const data = await res.json();
+                
+                document.getElementById('config-title').value = data.config.title || '';
+                document.getElementById('config-date').value = data.config.date_location || '';
+                document.getElementById('config-auto-date').checked = data.config.auto_date === 1;
+            } catch (err) {
+                console.error('加载配置失败:', err);
+            }
+        }
+
+        // 保存配置
+        async function saveConfig() {
+            const config = {
+                title: document.getElementById('config-title').value,
+                date_location: document.getElementById('config-date').value,
+                auto_date: document.getElementById('config-auto-date').checked
+            };
+
+            try {
+                const res = await fetch('/api/admin/config', {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify(config)
+                });
+
+                if (!res.ok) throw new Error('保存失败');
+                showToast('✅ 配置已保存', 'success');
+            } catch (err) {
+                showToast('保存失败: ' + err.message, 'error');
+            }
+        }
+
+        // 加载菜品
+        async function loadDishes() {
+            try {
+                const res = await fetch('/api/admin/dishes', { headers: getHeaders() });
+                if (!res.ok) throw new Error('获取菜品失败');
+                const data = await res.json();
+                
+                renderDishes(data.dishes);
+            } catch (err) {
+                console.error('加载菜品失败:', err);
+                document.getElementById('dishes-tbody').innerHTML = 
+                    '<tr><td colspan="6" style="text-align: center; color: red;">加载失败</td></tr>';
+            }
+        }
+
+        // 渲染菜品表格
+        function renderDishes(dishes) {
+            const tbody = document.getElementById('dishes-tbody');
+            
+            if (dishes.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #999;">暂无菜品</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = dishes.map(dish => `
+                <tr data-id="${dish.id}">
+                    <td>${dish.id}</td>
+                    <td><input type="text" class="table-input" value="${dish.name}" onchange="updateDish(${dish.id}, 'name', this.value)"></td>
+                    <td><input type="text" class="table-input" value="${dish.chef}" onchange="updateDish(${dish.id}, 'chef', this.value)"></td>
+                    <td><input type="number" class="table-input table-input-small" value="${dish.up_votes}" onchange="updateDish(${dish.id}, 'up_votes', this.value)"></td>
+                    <td><input type="number" class="table-input table-input-small" value="${dish.down_votes}" onchange="updateDish(${dish.id}, 'down_votes', this.value)"></td>
+                    <td class="action-btns">
+                        <button class="btn btn-danger" onclick="deleteDish(${dish.id})">删除</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // 更新菜品
+        async function updateDish(id, field, value) {
+            const row = document.querySelector(`#dishes-tbody tr[data-id="${id}"]`);
+            const data = {
+                name: row.querySelector('input[type="text"]').value,
+                chef: row.querySelectorAll('input[type="text"]')[1].value,
+                up_votes: parseInt(row.querySelectorAll('input[type="number"]')[0].value) || 0,
+                down_votes: parseInt(row.querySelectorAll('input[type="number"]')[1].value) || 0
+            };
+
+            try {
+                const res = await fetch(`/api/admin/dishes/${id}`, {
+                    method: 'PUT',
+                    headers: getHeaders(),
+                    body: JSON.stringify(data)
+                });
+
+                if (!res.ok) throw new Error('更新失败');
+                showToast('✅ 已更新', 'success');
+            } catch (err) {
+                showToast('更新失败: ' + err.message, 'error');
+            }
+        }
+
+        // 添加菜品
+        async function addDish() {
+            const data = {
+                name: '新菜品',
+                chef: '新厨师',
+                up_votes: 0,
+                down_votes: 0
+            };
+
+            try {
+                const res = await fetch('/api/admin/dishes', {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify(data)
+                });
+
+                if (!res.ok) throw new Error('创建失败');
+                showToast('✅ 已添加新菜品', 'success');
+                await loadDishes();
+            } catch (err) {
+                showToast('添加失败: ' + err.message, 'error');
+            }
+        }
+
+        // 删除菜品
+        async function deleteDish(id) {
+            if (!confirm('确定要删除这道菜品吗？')) return;
+
+            try {
+                const res = await fetch(`/api/admin/dishes/${id}`, {
+                    method: 'DELETE',
+                    headers: getHeaders()
+                });
+
+                if (!res.ok) throw new Error('删除失败');
+                showToast('✅ 已删除', 'success');
+                await loadDishes();
+            } catch (err) {
+                showToast('删除失败: ' + err.message, 'error');
+            }
+        }
+
+        // 加载厨师
+        async function loadChefs() {
+            try {
+                const res = await fetch('/api/admin/chefs', { headers: getHeaders() });
+                if (!res.ok) throw new Error('获取厨师失败');
+                const data = await res.json();
+                
+                renderChefs(data.chefs);
+            } catch (err) {
+                console.error('加载厨师失败:', err);
+                document.getElementById('chefs-tbody').innerHTML = 
+                    '<tr><td colspan="9" style="text-align: center; color: red;">加载失败</td></tr>';
+            }
+        }
+
+        // 渲染厨师表格
+        function renderChefs(chefs) {
+            const tbody = document.getElementById('chefs-tbody');
+            
+            if (chefs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #999;">暂无厨师</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = chefs.map(chef => `
+                <tr data-id="${chef.id}">
+                    <td>${chef.id}</td>
+                    <td>
+                        <img src="${chef.photo}" class="img-preview" onclick="changePhoto(${chef.id})" title="点击更换照片">
+                    </td>
+                    <td><input type="text" class="table-input" value="${chef.name}" onchange="updateChef(${chef.id})"></td>
+                    <td><input type="text" class="table-input" value="${chef.role}" onchange="updateChef(${chef.id})"></td>
+                    <td><input type="text" class="table-input" value="${chef.description || ''}" onchange="updateChef(${chef.id})"></td>
+                    <td><input type="number" class="table-input table-input-small" value="${chef.daily_rank}" onchange="updateChef(${chef.id})"></td>
+                    <td><input type="number" class="table-input table-input-small" value="${chef.monthly_rank}" onchange="updateChef(${chef.id})"></td>
+                    <td><input type="number" class="table-input table-input-small" value="${chef.monthly_votes}" onchange="updateChef(${chef.id})"></td>
+                    <td class="action-btns">
+                        <button class="btn btn-danger" onclick="deleteChef(${chef.id})">删除</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // 更新厨师
+        async function updateChef(id) {
+            const row = document.querySelector(`#chefs-tbody tr[data-id="${id}"]`);
+            const inputs = row.querySelectorAll('input');
+            const data = {
+                name: inputs[0].value,
+                role: inputs[1].value,
+                description: inputs[2].value,
+                daily_rank: parseInt(inputs[3].value) || 99,
+                monthly_rank: parseInt(inputs[4].value) || 99,
+                monthly_votes: parseInt(inputs[5].value) || 0,
+                photo: row.querySelector('img').src
+            };
+
+            try {
+                const res = await fetch(`/api/admin/chefs/${id}`, {
+                    method: 'PUT',
+                    headers: getHeaders(),
+                    body: JSON.stringify(data)
+                });
+
+                if (!res.ok) throw new Error('更新失败');
+                showToast('✅ 已更新', 'success');
+            } catch (err) {
+                showToast('更新失败: ' + err.message, 'error');
+            }
+        }
+
+        // 添加厨师
+        async function addChef() {
+            const data = {
+                name: '新厨师',
+                role: '厨师',
+                photo: 'static/logo.png',
+                description: '请修改简介',
+                daily_rank: 99,
+                monthly_rank: 99,
+                monthly_votes: 0
+            };
+
+            try {
+                const res = await fetch('/api/admin/chefs', {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify(data)
+                });
+
+                if (!res.ok) throw new Error('创建失败');
+                showToast('✅ 已添加新厨师', 'success');
+                await loadChefs();
+            } catch (err) {
+                showToast('添加失败: ' + err.message, 'error');
+            }
+        }
+
+        // 删除厨师
+        async function deleteChef(id) {
+            if (!confirm('确定要删除这位厨师吗？')) return;
+
+            try {
+                const res = await fetch(`/api/admin/chefs/${id}`, {
+                    method: 'DELETE',
+                    headers: getHeaders()
+                });
+
+                if (!res.ok) throw new Error('删除失败');
+                showToast('✅ 已删除', 'success');
+                await loadChefs();
+            } catch (err) {
+                showToast('删除失败: ' + err.message, 'error');
+            }
+        }
+
+        // 更换照片
+        function changePhoto(chefId) {
+            currentPhotoTarget = chefId;
+            document.getElementById('file-input-photo').click();
+        }
+
+        // 处理照片上传
+        document.getElementById('file-input-photo').addEventListener('change', async function(e) {
+            const file = e.target.files[0];
             if (!file) return;
 
             const formData = new FormData();
             formData.append('file', file);
 
-            document.getElementById('status-msg').innerText = "图片上传中...";
+            try {
+                const res = await fetch('/api/upload', {
+                    method: 'POST',
+                    headers: { 'x-admin-token': adminToken },
+                    body: formData
+                });
 
-            fetch('/api/upload', {
-                method: 'POST',
-                body: formData
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.url) {
-                    // 1. 更新预览
-                    document.getElementById(imgPreviewId).src = data.url;
+                if (!res.ok) throw new Error('上传失败');
+                const data = await res.json();
 
-                    // 2. 更新数据结构
-                    if (chefIndex !== null) {
-                        currentData.chefs[chefIndex].photo = data.url;
-                    } else if (hiddenInputId) {
-                        document.getElementById(hiddenInputId).value = data.url;
-                    }
-                    document.getElementById('status-msg').innerText = "图片已就绪，记得点保存";
-                }
-            })
-            .catch(err => {
-                document.getElementById('status-msg').innerText = "上传失败，请检查服务器日志";
-                console.error("Upload Error:", err);
-            });
+                // 更新图片
+                const row = document.querySelector(`#chefs-tbody tr[data-id="${currentPhotoTarget}"]`);
+                row.querySelector('img').src = data.url;
+
+                await updateChef(currentPhotoTarget);
+                showToast('✅ 照片已更新', 'success');
+            } catch (err) {
+                showToast('上传失败: ' + err.message, 'error');
+            }
+
+            e.target.value = '';
+        });
+
+        // 导出菜品
+        function exportDishes() {
+            fetch('/api/admin/dishes', { headers: getHeaders() })
+                .then(res => res.json())
+                .then(data => {
+                    const csv = dishesToCSV(data.dishes);
+                    downloadCSV(csv, 'dishes.csv');
+                    showToast('✅ 已导出', 'success');
+                });
         }
 
-        // --- 核心：保存所有数据 ---
-        function saveAll() {
-            // 收集 Config 数据
-            currentData.config.title = document.getElementById('cfg-title').value;
-            currentData.config.date = document.getElementById('cfg-date').value;
-            currentData.config.logo_url = document.getElementById('cfg-logo-val').value;
-            currentData.config.qr_url = document.getElementById('cfg-qr-val').value;
-
-            // 临时禁用保存按钮，防止重复提交
-            const saveBtn = document.querySelector('.btn-save');
-            saveBtn.disabled = true;
-
-            fetch('/api/save', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(currentData)
-            })
-            .then(res => res.json())
-            .then(res => {
-                saveBtn.disabled = false;
-                if (res.success) {
-                    const msg = document.getElementById('status-msg');
-                    msg.innerText = "✅ 保存成功！ " + new Date().toLocaleTimeString();
-                    msg.style.color = "green";
-                    setTimeout(() => msg.innerText = "", 5000);
-                } else {
-                    alert("保存失败，请检查服务器日志");
-                }
-            })
-            .catch(err => {
-                saveBtn.disabled = false;
-                alert("保存过程中出现网络错误");
-                console.error("Save Error:", err);
-            });
+        // 导出厨师
+        function exportChefs() {
+            fetch('/api/admin/chefs', { headers: getHeaders() })
+                .then(res => res.json())
+                .then(data => {
+                    const csv = chefsToCSV(data.chefs);
+                    downloadCSV(csv, 'chefs.csv');
+                    showToast('✅ 已导出', 'success');
+                });
         }
+
+        // 导出所有数据
+        async function exportAllData() {
+            try {
+                const [configRes, dishesRes, chefsRes] = await Promise.all([
+                    fetch('/api/admin/config', { headers: getHeaders() }),
+                    fetch('/api/admin/dishes', { headers: getHeaders() }),
+                    fetch('/api/admin/chefs', { headers: getHeaders() })
+                ]);
+
+                const [config, dishes, chefs] = await Promise.all([
+                    configRes.json(),
+                    dishesRes.json(),
+                    chefsRes.json()
+                ]);
+
+                const allData = {
+                    config: config.config,
+                    dishes: dishes.dishes,
+                    chefs: chefs.chefs,
+                    exported_at: new Date().toISOString()
+                };
+
+                const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `restaurant-data-${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+
+                showToast('✅ 已导出所有数据', 'success');
+            } catch (err) {
+                showToast('导出失败: ' + err.message, 'error');
+            }
+        }
+
+        // CSV 转换
+        function dishesToCSV(dishes) {
+            const headers = ['ID', '菜品名称', '厨师', '点赞数', '踩数'];
+            const rows = dishes.map(d => [d.id, d.name, d.chef, d.up_votes, d.down_votes]);
+            return [headers, ...rows].map(row => row.join(',')).join('\n');
+        }
+
+        function chefsToCSV(chefs) {
+            const headers = ['ID', '姓名', '职位', '简介', '日榜', '月榜', '月票', '照片'];
+            const rows = chefs.map(c => [c.id, c.name, c.role, c.description, c.daily_rank, c.monthly_rank, c.monthly_votes, c.photo]);
+            return [headers, ...rows].map(row => row.join(',')).join('\n');
+        }
+
+        function downloadCSV(csv, filename) {
+            const BOM = '\uFEFF';  // UTF-8 BOM
+            const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // 批量导入（简化版）
+        function importDishes() {
+            alert('批量导入功能：\n请准备CSV文件，格式：菜品名称,厨师,点赞数,踩数\n然后选择文件导入。');
+            document.getElementById('file-input-dishes').click();
+        }
+
+        function importChefs() {
+            alert('批量导入功能：\n请准备CSV文件，格式：姓名,职位,简介,日榜,月榜,月票\n然后选择文件导入。');
+            document.getElementById('file-input-chefs').click();
+        }
+
+        // 重置密钥
+        function resetToken() {
+            if (confirm('确定要重置访问密钥吗？')) {
+                localStorage.removeItem('admin_token');
+                location.reload();
+            }
+        }
+
+        // 显示提示
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast ' + type;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+
+        // 初始化
+        init();
     </script>
 </body>
 </html>

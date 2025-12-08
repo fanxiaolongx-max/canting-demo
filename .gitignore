@@ -1,0 +1,38 @@
+# 依赖
+node_modules/
+package-lock.json
+
+# 备份文件
+backups/
+
+# 论坛数据（用户生成内容）
+forum-data.json
+
+# SQLite 数据库
+*.db
+*.db-shm
+*.db-wal
+
+# 备份文件
+*.backup
+server.js.backup
+admin.html.backup
+
+# 环境变量
+.env
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 日志
+*.log
+npm-debug.log*
+
+# 编辑器
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+

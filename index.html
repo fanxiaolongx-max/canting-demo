@@ -19,7 +19,9 @@
         }
 
         /* 顶部导航 */
-        header { background-color: #0f6b48; color: rgba(255,255,255,0.8); padding: 10px 20px; font-size: 12px; display: flex; gap: 20px; flex-shrink: 0; }
+        header { background-color: #0f6b48; color: rgba(255,255,255,0.8); padding: 10px 20px; font-size: 12px; display: flex; gap: 20px; justify-content: space-between; align-items: center; flex-shrink: 0; }
+        .header-left { display: flex; gap: 20px; }
+        .header-right { font-family: "KaiTi", "楷体", "STKaiti", "华文楷体", cursive; font-size: 18px; color: rgba(255,255,255,0.95); font-weight: normal; letter-spacing: 2px; }
         .header-title-area { background-color: #0f6b48; color: #fff; padding: 10px 30px; font-size: 24px; font-weight: bold; flex-shrink: 0; }
 
         /* 主内容区布局 */
@@ -28,10 +30,30 @@
 
         /* --- 左侧：菜品榜 --- */
         .column-left { flex: 0 0 40%; display: flex; flex-direction: column; border-right: 1px solid #e0e0e0; padding-right: 20px; height: 100%; }
-        /* 列表滚动区 */
-        .dish-list { overflow-y: auto; flex: 1; padding-right: 10px; }
-        .dish-list::-webkit-scrollbar { width: 6px; }
-        .dish-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+        /* 列表滚动区 - 默认隐藏滚动条，滚动时显示 */
+        .dish-list { 
+            overflow-y: auto; 
+            flex: 1; 
+            padding-right: 10px;
+            scrollbar-width: thin;
+            scrollbar-color: transparent transparent;
+        }
+        .dish-list:hover::-webkit-scrollbar,
+        .dish-list:active::-webkit-scrollbar {
+            width: 6px;
+        }
+        .dish-list::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
+        .dish-list::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 3px;
+        }
+        .dish-list:hover::-webkit-scrollbar-thumb,
+        .dish-list:active::-webkit-scrollbar-thumb {
+            background: #999;
+        }
 
         .dish-item { display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid #f5f5f5; }
         .rank-badge { width: 24px; height: 24px; background-color: #999; color: #fff; text-align: center; line-height: 24px; font-size: 14px; margin-right: 15px; border-radius: 2px; }
@@ -40,13 +62,32 @@
         .dish-info span { color: #666; font-size: 13px; }
 
         .vote-stats { display: flex; gap: 15px; color: #666; font-size: 14px; }
-        .icon-group { display: flex; gap: 4px; cursor: pointer; align-items: center; }
-        .icon-group:hover svg { fill: #0f6b48; }
-        svg { width: 16px; height: 16px; fill: #999; transition: 0.2s; }
+        .vote-stat-item { display: flex; gap: 4px; align-items: center; }
 
         /* --- 中间：日榜 --- */
-        .column-middle { flex: 0 0 30%; display: flex; flex-direction: column; position: relative; height: 100%; }
-        .chef-list-wrapper { flex: 1; overflow-y: auto; } /* 中间也让列表单独滚动 */
+        .column-middle { flex: 0 0 30%; display: flex; flex-direction: column; position: relative; height: 100%; border-right: 1px solid #e0e0e0; padding-right: 20px; }
+        .chef-list-wrapper { 
+            flex: 1; 
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: transparent transparent;
+        }
+        .chef-list-wrapper:hover::-webkit-scrollbar,
+        .chef-list-wrapper:active::-webkit-scrollbar {
+            width: 6px;
+        }
+        .chef-list-wrapper::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
+        .chef-list-wrapper::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 3px;
+        }
+        .chef-list-wrapper:hover::-webkit-scrollbar-thumb,
+        .chef-list-wrapper:active::-webkit-scrollbar-thumb {
+            background: #999;
+        }
 
         .chef-list-item { display: flex; margin-bottom: 25px; }
         .chef-rank { font-size: 16px; color: #666; margin-right: 15px; padding-top: 10px; }
@@ -63,17 +104,36 @@
             flex-direction: column;
             position: relative;
             height: 100%;
-            overflow: hidden; /* 禁止右侧整体滚动，防止撑破布局 */
+            overflow: hidden;
+            padding-left: 20px;
         }
 
         /* 1. 列表区域：占据剩余空间，独立滚动 */
         #chef-monthly-container {
             flex: 1;
             overflow-y: auto;
-            min-height: 0; /* Firefox/Flex bug fix */
-            padding-bottom: 10px;
+            min-height: 0;
+            padding-bottom: 5px;
+            margin-bottom: 5px;
+            scrollbar-width: thin;
+            scrollbar-color: transparent transparent;
         }
-        #chef-monthly-container::-webkit-scrollbar { width: 0; } /* 隐藏滚动条美观 */
+        #chef-monthly-container:hover::-webkit-scrollbar,
+        #chef-monthly-container:active::-webkit-scrollbar {
+            width: 6px;
+        }
+        #chef-monthly-container::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
+        #chef-monthly-container::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 3px;
+        }
+        #chef-monthly-container:hover::-webkit-scrollbar-thumb,
+        #chef-monthly-container:active::-webkit-scrollbar-thumb {
+            background: #999;
+        }
 
         .month-rank-item { display: flex; align-items: center; margin-bottom: 20px; }
         .medal { width: 20px; margin-right: 10px; text-align: center; font-size: 18px; }
@@ -84,23 +144,105 @@
 
         /* 2. 卡片区域：固定底部，不随列表滚动 */
         .profile-card {
-            flex-shrink: 0; /* 禁止被压缩 */
-            background-color: #f9f9f9;
-            padding: 15px;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, #f9f9f9 0%, #ffffff 100%);
+            padding: 12px;
             border-radius: 8px;
-            border: 1px solid #eee;
-            margin-top: 10px;
-
-            /* 关键：底部留白给 Logo，避免重叠 */
+            border: 1px solid #e0e0e0;
+            margin-top: 8px;
             margin-bottom: 60px;
             position: relative;
             z-index: 10;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         }
 
-        .profile-header { display: flex; gap: 10px; margin-bottom: 10px; }
-        .qr-section { display: flex; gap: 10px; }
-        .qr-box { flex: 1; background: #fff; padding: 5px; display: flex; align-items: center; gap: 5px; border: 1px solid #eee; }
-        .qr-img { width: 30px; height: 30px; object-fit: contain; }
+        /* 主厨信息区 */
+        .profile-header { 
+            display: flex; 
+            gap: 10px; 
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e8e8e8;
+        }
+        .profile-header .chef-photo {
+            width: 50px;
+            height: 60px;
+            border-radius: 6px;
+            border: 2px solid #e0e0e0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+        }
+        .profile-header .chef-details {
+            flex: 1;
+        }
+        .profile-header .chef-details h4 {
+            font-size: 15px;
+            margin-bottom: 4px;
+            color: #333;
+        }
+        .profile-header .chef-details h4 span {
+            font-size: 12px;
+            color: #666;
+            font-weight: normal;
+            margin-left: 6px;
+        }
+        .profile-header .chef-details p {
+            font-size: 11px;
+            color: #666;
+            line-height: 1.4;
+            margin-bottom: 4px;
+        }
+        
+        /* 二维码区域 - 适中优化 */
+        .qr-section { 
+            display: flex; 
+            gap: 10px;
+            justify-content: center;
+            align-items: stretch;
+        }
+        .qr-box { 
+            flex: 1;
+            max-width: 145px;
+            background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+            padding: 10px; 
+            display: flex; 
+            flex-direction: column;
+            align-items: center;
+            gap: 6px; 
+            border: 2px solid #0f6b48; 
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(15, 107, 72, 0.1);
+            transition: all 0.3s ease;
+        }
+        .qr-box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(15, 107, 72, 0.18);
+            border-color: #1a8d5f;
+        }
+        .qr-img { 
+            width: 90px; 
+            height: 90px; 
+            object-fit: contain;
+            border: 2px solid #fff;
+            border-radius: 6px;
+            padding: 4px;
+            background: white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+        .qr-label {
+            font-size: 12px;
+            font-weight: bold;
+            color: #0f6b48;
+            text-align: center;
+            letter-spacing: 0.2px;
+            line-height: 1.2;
+        }
+        .qr-desc {
+            font-size: 10px;
+            color: #999;
+            text-align: center;
+            line-height: 1.2;
+            margin-top: -2px;
+        }
 
         /* 3. Logo 区域：绝对定位在右下角 */
         .huawei-logo {
@@ -115,14 +257,277 @@
         }
         .logo-img { height: 50px; width: auto; }
 
+        /* ===== 响应式设计 - 手机端适配 ===== */
+        @media (max-width: 768px) {
+            body {
+                overflow-x: hidden;
+                overflow-y: auto;
+                height: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            /* 顶部导航 */
+            header {
+                font-size: 9px;
+                padding: 8px 10px;
+                gap: 8px;
+                flex-wrap: wrap;
+            }
+            
+            .header-left {
+                flex-wrap: wrap;
+            }
+            
+            #refresh-timer {
+                font-size: 9px !important;
+            }
+            
+            /* 主标题 */
+            .header-title-area {
+                font-size: 16px;
+                padding: 8px 15px;
+            }
+            
+            /* 大屏容器 */
+            .dashboard-container {
+                width: 100%;
+                height: auto;
+                min-height: auto;
+                border-radius: 0;
+            }
+            
+            /* 主内容区 - 垂直堆叠 */
+            .main-content {
+                flex-direction: column;
+                padding: 10px;
+                gap: 15px;
+            }
+            
+            /* 左侧菜品 */
+            .column-left {
+                flex: none;
+                width: 100%;
+                border-right: none;
+                padding-right: 0;
+                border-bottom: 2px solid #e0e0e0;
+                padding-bottom: 15px;
+            }
+            
+            .dish-list {
+                max-height: 400px;
+            }
+            
+            .section-title {
+                font-size: 16px;
+                margin-bottom: 12px;
+            }
+            
+            .dish-item {
+                padding: 10px 0;
+            }
+            
+            .rank-badge {
+                width: 24px;
+                height: 24px;
+                line-height: 24px;
+                font-size: 13px;
+                margin-right: 12px;
+            }
+            
+            .dish-info {
+                font-size: 14px;
+            }
+            
+            .vote-stats {
+                font-size: 13px;
+                gap: 10px;
+            }
+            
+            /* 中间日榜 */
+            .column-middle {
+                flex: none;
+                width: 100%;
+                border-right: none;
+                padding-right: 0;
+                border-bottom: 2px solid #e0e0e0;
+                padding-bottom: 15px;
+            }
+            
+            .chef-list-wrapper {
+                max-height: 350px;
+            }
+            
+            .chef-list-item {
+                margin-bottom: 15px;
+            }
+            
+            .chef-rank {
+                font-size: 14px;
+                padding-top: 5px;
+            }
+            
+            .chef-photo {
+                width: 50px;
+                height: 60px;
+            }
+            
+            .chef-details h4 {
+                font-size: 14px;
+            }
+            
+            .chef-details p {
+                font-size: 11px;
+            }
+            
+            /* 右侧月榜 */
+            .column-right {
+                flex: none;
+                width: 100%;
+                padding-left: 0;
+            }
+            
+            /* 移动端header右侧文字 */
+            .header-right {
+                font-size: 14px;
+                letter-spacing: 1px;
+            }
+            
+            #chef-monthly-container {
+                max-height: 350px;
+            }
+            
+            .month-rank-item {
+                margin-bottom: 15px;
+            }
+            
+            .medal {
+                font-size: 16px;
+            }
+            
+            .chef-mini-photo {
+                width: 35px;
+                height: 35px;
+            }
+            
+            .month-details strong {
+                font-size: 13px;
+            }
+            
+            .month-details span {
+                font-size: 11px;
+            }
+            
+            .month-score {
+                font-size: 11px;
+            }
+            
+            /* 个人卡片 */
+            .profile-card {
+                padding: 10px;
+                margin-bottom: 70px;
+            }
+            
+            .profile-header {
+                margin-bottom: 10px;
+                padding-bottom: 8px;
+            }
+            
+            .profile-header .chef-photo {
+                width: 45px;
+                height: 55px;
+            }
+            
+            .profile-header .chef-details h4 {
+                font-size: 14px;
+            }
+            
+            .profile-header .chef-details p {
+                font-size: 10px;
+                margin-bottom: 2px;
+            }
+            
+            /* 二维码 */
+            .qr-section {
+                gap: 8px;
+            }
+            
+            .qr-box {
+                padding: 8px;
+                max-width: 48%;
+            }
+            
+            .qr-img {
+                width: 75px;
+                height: 75px;
+            }
+            
+            .qr-label {
+                font-size: 11px;
+            }
+            
+            .qr-desc {
+                font-size: 9px;
+            }
+            
+            /* Logo */
+            .huawei-logo {
+                padding: 3px;
+            }
+            
+            .logo-img {
+                height: 35px;
+            }
+            
+            .footer-location {
+                font-size: 11px;
+            }
+        }
+        
+        /* 超小屏幕 */
+        @media (max-width: 480px) {
+            .header-title-area {
+                font-size: 14px;
+            }
+            
+            .header-right {
+                font-size: 12px;
+                letter-spacing: 1px;
+            }
+            
+            .section-title {
+                font-size: 15px;
+            }
+            
+            .qr-section {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .qr-box {
+                width: 100%;
+                max-width: 200px;
+            }
+            
+            .qr-img {
+                width: 85px;
+                height: 85px;
+            }
+        }
+
     </style>
 </head>
 <body>
 
     <div class="dashboard-container">
         <header>
-            <span>Home</span><span>Administration</span><span>IT</span><span>HR</span>
-            <span>Transaction flow</span><span>Privacy Statement</span>
+            <div class="header-left">
+                <span>Home</span><span>Administration</span><span>IT</span><span>HR</span>
+                <span>Transaction flow</span><span>Privacy Statement</span>
+            </div>
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <span id="refresh-timer" style="font-size: 11px; opacity: 0.8;">自动刷新: 5:00</span>
+                <div class="header-right">安全不松懈</div>
+            </div>
         </header>
 
         <div class="header-title-area" id="page-title">加载中...</div>
@@ -159,16 +564,11 @@
     </div>
 
     <script>
-        // 页面启动时获取数据
-        fetch('/api/data')
-            .then(res => res.json())
-            .then(data => renderPage(data))
-            .catch(err => {
-                console.error("Fetch error:", err);
-                document.getElementById('page-title').innerText = "无法连接数据服务";
-            });
+        let currentData = null; // 保存当前数据用于错误回滚
+        
 
         function renderPage(data) {
+            currentData = data; // 更新全局引用
             const config = data.config || {};
             const dishes = data.dishes || [];
             const chefs = data.chefs || [];
@@ -182,22 +582,16 @@
             logoImg.src = config.logo_url || 'static/logo.png';
             logoImg.onerror = function() { this.style.display = 'none'; }; // 图片坏了就隐藏
 
-            // 2. 渲染菜品列表
+            // 2. 渲染菜品列表（添加 data 属性支持优化）
             const dishHtml = dishes.map((dish, index) => {
                 const rank = index + 1;
                 return `
-                    <div class="dish-item">
+                    <div class="dish-item" data-dish-id="${dish.id}">
                         <div class="rank-badge ${rank <= 3 ? 'top-3' : ''}">${rank}</div>
                         <div class="dish-info">${dish.name} - <span>${dish.chef}</span></div>
                         <div class="vote-stats">
-                            <div class="icon-group" onclick="vote(${dish.id}, 'up')">
-                                <svg viewBox="0 0 24 24"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91l-.01-.01L23 10z"/></svg>
-                                <span>${dish.up}</span>
-                            </div>
-                            <div class="icon-group" onclick="vote(${dish.id}, 'down')">
-                                <svg viewBox="0 0 24 24" style="transform: rotate(180deg);"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91l-.01-.01L23 10z"/></svg>
-                                <span>${dish.down}</span>
-                            </div>
+                            <div class="vote-stat-item">👍 ${dish.up}</div>
+                            <div class="vote-stat-item">👎 ${dish.down}</div>
                         </div>
                     </div>
                 `;
@@ -217,19 +611,23 @@
                 </div>
             `).join('');
 
-            // 4. 渲染月榜
+            // 4. 渲染月榜（改进勋章显示）
             const monthlyChefs = [...chefs].sort((a,b) => a.monthly_rank - b.monthly_rank);
-            document.getElementById('chef-monthly-container').innerHTML = monthlyChefs.map(chef => `
-                <div class="month-rank-item">
-                    <div class="medal">${chef.monthly_rank === 1 ? '🥇' : '🥈'}</div>
-                    <img src="${chef.photo}" class="chef-mini-photo">
-                    <div class="month-details">
-                        <strong>${chef.name}</strong>
-                        <span>本月得票: ${chef.monthly_votes}</span>
+            const medals = ['🥇', '🥈', '🥉']; // 金银铜牌
+            document.getElementById('chef-monthly-container').innerHTML = monthlyChefs.map(chef => {
+                const medal = medals[chef.monthly_rank - 1] || chef.monthly_rank;
+                return `
+                    <div class="month-rank-item">
+                        <div class="medal">${medal}</div>
+                        <img src="${chef.photo}" class="chef-mini-photo" onerror="this.src='static/logo.png'">
+                        <div class="month-details">
+                            <strong>${chef.name}</strong>
+                            <span>本月得票: ${chef.monthly_votes}</span>
+                        </div>
+                        <div class="month-score">月度第${chef.monthly_rank}名</div>
                     </div>
-                    <div class="month-score">月度第${chef.monthly_rank}名</div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
 
             // 5. 渲染个人卡片 (只要有厨师数据就显示)
             const topChef = dailyChefs.length > 0 ? dailyChefs[0] : null;
@@ -239,36 +637,123 @@
                 card.style.display = "block"; // 显示卡片
                 card.innerHTML = `
                     <div class="profile-header">
-                        <img src="${topChef.photo}" class="chef-photo" onerror="this.src='//via.placeholder.com/60'">
+                        <img src="${topChef.photo}" class="chef-photo" onerror="this.src='static/logo.png'">
                         <div class="chef-details">
                             <h4>${topChef.name} <span>${topChef.role}</span></h4>
                             <p>${topChef.desc}</p>
+                            <div style="margin-top: 5px; font-size: 10px; color: #999;">
+                                🏆 日榜${topChef.daily_rank} | 📊 月榜${topChef.monthly_rank} | 🎫 ${topChef.monthly_votes}票
+                            </div>
                         </div>
                     </div>
                     <div class="qr-section">
-                        <div class="qr-box"><img src="${config.qr_url}" class="qr-img"><span style="font-size:10px;color:#666">心声墙</span></div>
-                        <div class="qr-box"><img src="${config.qr_url}" class="qr-img"><span style="font-size:10px;color:#666">点赞榜</span></div>
+                        <div class="qr-box">
+                            <img id="qr-vote" src="" class="qr-img">
+                            <div class="qr-label">📱 扫码投票</div>
+                            <div class="qr-desc">为喜欢的菜品点赞</div>
+                        </div>
+                        <div class="qr-box">
+                            <img id="qr-forum" src="" class="qr-img">
+                            <div class="qr-label">💬 心声墙</div>
+                            <div class="qr-desc">匿名分享你的想法</div>
+                        </div>
                     </div>
                 `;
+                
+                // 加载真实二维码
+                loadQRCode('vote');
+                loadQRCode('forum');
             } else {
                 card.style.display = "none";
             }
         }
 
-        // 投票功能
-        function vote(id, type) {
-            fetch('/api/vote', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ dishId: id, type: type })
-            })
-            .then(res => res.json())
-            .then(res => {
-                if(res.success) {
-                    renderPage(res.newData);
-                }
-            });
+        // 加载二维码
+        function loadQRCode(type) {
+            fetch(`/api/qrcode/${type}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        const img = document.getElementById(`qr-${type}`);
+                        if (img) {
+                            img.src = data.qrcode;
+                        }
+                    }
+                })
+                .catch(err => console.error('加载二维码失败:', err));
         }
+
+        // 加载数据函数
+        function loadData() {
+            fetch('/api/data')
+                .then(res => res.json())
+                .then(data => {
+                    currentData = data;
+                    renderPage(data);
+                    console.log('✅ 数据已刷新:', new Date().toLocaleTimeString());
+                })
+                .catch(err => {
+                    console.error("数据加载失败:", err);
+                    document.getElementById('page-title').innerText = "无法连接数据服务";
+                });
+        }
+
+        // 自动刷新：每5分钟刷新一次数据
+        let autoRefreshInterval = null;
+        let countdownInterval = null;
+        const REFRESH_INTERVAL = 5 * 60 * 1000; // 5分钟 = 300000毫秒
+        
+        function updateRefreshTimer(seconds) {
+            const timerEl = document.getElementById('refresh-timer');
+            if (timerEl) {
+                const minutes = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                timerEl.textContent = `自动刷新: ${minutes}:${String(secs).padStart(2, '0')}`;
+            }
+        }
+        
+        function startAutoRefresh() {
+            // 清除之前的定时器（如果存在）
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+            }
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+            
+            // 每5分钟刷新一次
+            autoRefreshInterval = setInterval(() => {
+                console.log('🔄 自动刷新数据...');
+                loadData();
+                // 重置倒计时
+                startCountdown();
+            }, REFRESH_INTERVAL);
+            
+            // 启动倒计时
+            startCountdown();
+            console.log('✅ 自动刷新已启动（每5分钟）');
+        }
+        
+        function startCountdown() {
+            let remaining = REFRESH_INTERVAL / 1000; // 转换为秒
+            updateRefreshTimer(remaining);
+            
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+            
+            countdownInterval = setInterval(() => {
+                remaining--;
+                if (remaining <= 0) {
+                    remaining = REFRESH_INTERVAL / 1000;
+                }
+                updateRefreshTimer(remaining);
+            }, 1000);
+        }
+
+        // 页面启动时加载数据并启动自动刷新
+        loadData();
+        startAutoRefresh();
     </script>
 </body>
 </html>

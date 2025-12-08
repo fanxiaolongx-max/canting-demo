@@ -2,23 +2,23 @@
   "config": {
     "title": "埃及尼罗河餐厅全接触",
     "date": "2025-12-08 午餐",
-    "logo_url": "static/img-1765208801833.png",
+    "logo_url": "static/img-1765225891816.png",
     "qr_url": "static/img-1765202791197.png"
   },
   "dishes": [
     {
-      "id": 104,
-      "name": "小炒黄牛肉",
-      "chef": "雷云龙",
-      "up": 77,
-      "down": 6
-    },
-    {
       "id": 106,
       "name": "麻辣水煮鱼",
       "chef": "彭刘锋",
-      "up": 72,
+      "up": 86,
       "down": 10
+    },
+    {
+      "id": 104,
+      "name": "小炒黄牛肉",
+      "chef": "雷云龙",
+      "up": 81,
+      "down": 6
     },
     {
       "id": 102,
@@ -159,7 +159,7 @@
       "id": 1,
       "name": "彭刘锋",
       "role": "本周主厨",
-      "photo": "static/img-1765208773327.png",
+      "photo": "static/img-1765225939740.png",
       "desc": "擅长川味、鱼类爆炒。",
       "daily_rank": 1,
       "monthly_rank": 1,
@@ -169,7 +169,7 @@
       "id": 2,
       "name": "兰达武",
       "role": "本周主厨",
-      "photo": "static/img-1765208776892.png",
+      "photo": "static/img-1765225943451.png",
       "desc": "甜品、小吃、家常菜高手。",
       "daily_rank": 2,
       "monthly_rank": 2,
@@ -179,7 +179,7 @@
       "id": 3,
       "name": "雷云龙",
       "role": "本周副厨",
-      "photo": "static/img-1765208780936.png",
+      "photo": "static/img-1765225948815.png",
       "desc": "今天工作不努力，明天努力找工作。",
       "daily_rank": 3,
       "monthly_rank": 1,
@@ -189,7 +189,7 @@
       "id": 4,
       "name": "冯宝洋",
       "role": "本周副厨",
-      "photo": "static/img-1765208787132.png",
+      "photo": "static/img-1765225952266.png",
       "desc": "擅长饮品、烧烤、羊肉类。",
       "daily_rank": 4,
       "monthly_rank": 3,
@@ -199,7 +199,7 @@
       "id": 5,
       "name": "杜军",
       "role": "面档师傅",
-      "photo": "static/img-1765208793399.png",
+      "photo": "static/img-1765225956531.png",
       "desc": "专业面点师傅，河粉米粉随时安排。",
       "daily_rank": 5,
       "monthly_rank": 4,
@@ -209,7 +209,7 @@
       "id": 6,
       "name": "程辉",
       "role": "铁板档",
-      "photo": "static/img-1765208797209.png",
+      "photo": "static/img-1765225959923.png",
       "desc": "铁板香煎高手，羊肉串招牌必点。",
       "daily_rank": 6,
       "monthly_rank": 5,

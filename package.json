@@ -1,6 +1,23 @@
 {
+  "name": "canting-demo",
+  "version": "3.0.0",
+  "description": "餐厅看板系统 - 菜品点赞、厨师排行、手机投票、匿名论坛（SQLite版）",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "restaurant",
+    "dashboard",
+    "voting"
+  ],
+  "author": "",
+  "license": "MIT",
   "dependencies": {
+    "better-sqlite3": "^12.5.0",
     "express": "^5.2.1",
-    "multer": "^2.0.2"
+    "multer": "^2.0.2",
+    "qrcode": "^1.5.4"
   }
 }

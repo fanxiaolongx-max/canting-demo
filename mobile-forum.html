@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>心声墙</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, "Microsoft YaHei", sans-serif; }
+        body { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            min-height: 100vh;
+            padding-bottom: 80px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .header {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header h1 { font-size: 24px; margin-bottom: 5px; }
+        .header p { font-size: 13px; opacity: 0.9; }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            padding: 15px 20px;
+            color: white;
+            font-size: 13px;
+        }
+        .stat-item { display: flex; align-items: center; gap: 5px; }
+
+        .posts-container {
+            padding: 10px 20px;
+        }
+
+        .post-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .post-author {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #666;
+        }
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+        }
+        .post-time {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .post-content {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #333;
+            margin-bottom: 12px;
+        }
+
+        .post-footer {
+            display: flex;
+            gap: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #f0f0f0;
+        }
+        .post-action {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #999;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .post-action:active {
+            transform: scale(0.95);
+        }
+        .post-action.liked {
+            color: #e91e63;
+        }
+
+        /* 评论区域 */
+        .comments-section {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #f0f0f0;
+        }
+        .comment-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid #f5f5f5;
+            position: relative;
+        }
+        .comment-item:last-child {
+            border-bottom: none;
+        }
+        .comment-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+        .comment-content {
+            flex: 1;
+            font-size: 13px;
+            color: #666;
+            line-height: 1.5;
+        }
+        .comment-time {
+            font-size: 11px;
+            color: #999;
+            margin-top: 4px;
+        }
+        .comment-delete-btn {
+            background: none;
+            border: none;
+            color: #999;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 4px 8px;
+            opacity: 0.7;
+            transition: 0.2s;
+            flex-shrink: 0;
+            align-self: flex-start;
+            margin-top: 2px;
+        }
+        .comment-delete-btn:hover {
+            opacity: 1;
+            color: #e91e63;
+            transform: scale(1.1);
+        }
+        .comment-delete-btn:active {
+            transform: scale(0.9);
+        }
+        .comment-input-box {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .comment-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            font-size: 13px;
+            outline: none;
+        }
+        .comment-input:focus {
+            border-color: #667eea;
+        }
+        .comment-btn {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        .comment-btn:active {
+            transform: scale(0.95);
+        }
+        .show-comments-btn {
+            color: #667eea;
+            font-size: 12px;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        /* 分页 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            padding: 20px;
+            color: white;
+        }
+        .page-btn {
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .page-btn:active {
+            background: rgba(255,255,255,0.3);
+        }
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .page-info {
+            font-size: 13px;
+        }
+
+        .fab {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            font-size: 28px;
+            border: none;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+        }
+        .fab:active {
+            transform: scale(0.9);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            width: 100%;
+            max-width: 500px;
+        }
+        .modal-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .modal-textarea {
+            width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 15px;
+            resize: none;
+            height: 120px;
+            font-family: inherit;
+        }
+        .modal-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .char-count {
+            text-align: right;
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .modal-btn.cancel {
+            background: #f5f5f5;
+            color: #666;
+        }
+        .modal-btn.submit {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        .modal-btn:active {
+            transform: scale(0.95);
+        }
+
+        .empty {
+            text-align: center;
+            color: white;
+            padding: 80px 20px;
+        }
+        .empty-icon { font-size: 64px; margin-bottom: 10px; }
+
+        .loading {
+            text-align: center;
+            color: white;
+            padding: 40px;
+        }
+
+        .toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            z-index: 1000;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>💬 心声墙</h1>
+        <p>匿名分享你的想法和建议</p>
+    </div>
+
+    <div class="stats">
+        <div class="stat-item">
+            <span>📝</span>
+            <span>共 <strong id="total-posts">0</strong> 条心声</span>
+        </div>
+        <div class="stat-item">
+            <span>❤️</span>
+            <span>累计 <strong id="total-likes">0</strong> 个赞</span>
+        </div>
+    </div>
+
+    <div class="posts-container" id="posts-container">
+        <div class="loading">加载中...</div>
+    </div>
+
+    <div class="pagination" id="pagination"></div>
+
+    <button class="fab" onclick="openModal()">✍️</button>
+
+    <div class="modal" id="post-modal">
+        <div class="modal-content">
+            <div class="modal-title">✍️ 发表心声</div>
+            <textarea 
+                class="modal-textarea" 
+                id="post-content" 
+                placeholder="说说你的想法...&#10;&#10;• 匿名发布，放心吐槽&#10;• 请文明用语，理性表达"
+                maxlength="500"
+                oninput="updateCharCount()"
+            ></textarea>
+            <div class="char-count">
+                <span id="char-count">0</span> / 500
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn cancel" onclick="closeModal()">取消</button>
+                <button class="modal-btn submit" onclick="submitPost()">发布</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        let posts = [];
+        let myLikes = JSON.parse(localStorage.getItem('forum_likes') || '[]');
+        let currentPage = 1;
+        let totalPages = 1;
+        let totalCount = 0;
+
+        // 生成或获取设备唯一ID
+        function getDeviceId() {
+            let deviceId = localStorage.getItem('forum_device_id');
+            if (!deviceId) {
+                // 生成唯一ID：时间戳 + 随机数
+                deviceId = 'device_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('forum_device_id', deviceId);
+            }
+            return deviceId;
+        }
+
+        // 生成固定的匿名名称（基于device_id）
+        function getAnonymousName(deviceId) {
+            if (!deviceId) return '匿名用户';
+            
+            // 可爱的形容词列表
+            const adjectives = [
+                '软萌', '甜心', '小可爱', '萌萌', '软软', '甜甜', '暖暖', '小星星',
+                '粉粉', '蓝蓝', '绿绿', '黄黄', '紫紫', '橙橙', '彩虹', '云朵',
+                '毛茸茸', '圆滚滚', '胖乎乎', '亮晶晶', '水汪汪', '笑眯眯', '笑嘻嘻', '乐呵呵',
+                '香喷喷', '甜滋滋', '酸溜溜', '辣乎乎', '热乎乎', '凉丝丝', '滑溜溜', '软绵绵'
+            ];
+            
+            // 可爱的名词列表
+            const nouns = [
+                '小兔', '小熊', '小猫', '小狗', '小鸟', '小鱼', '小鹿', '小羊',
+                '草莓', '樱桃', '苹果', '橙子', '葡萄', '西瓜', '蜜桃', '芒果',
+                '月亮', '星星', '太阳', '彩虹', '云朵', '雪花', '雨滴', '微风',
+                '棉花', '糖果', '蛋糕', '饼干', '奶茶', '咖啡', '果汁', '冰淇淋',
+                '小精灵', '小天使', '小公主', '小王子', '小宝贝', '小甜心', '小星星', '小月亮',
+                '小云朵', '小彩虹', '小雪花', '小雨滴', '小微风', '小阳光', '小花朵', '小叶子'
+            ];
+            
+            // 使用device_id生成固定的随机数种子
+            let hash = 0;
+            for (let i = 0; i < deviceId.length; i++) {
+                const char = deviceId.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash; // 转换为32位整数
+            }
+            
+            // 确保hash为正数
+            hash = Math.abs(hash);
+            
+            // 根据hash选择形容词和名词（使用不同的hash值确保组合多样）
+            const adjIndex = hash % adjectives.length;
+            const nounHash = Math.floor(hash / 1000); // 使用不同的hash值
+            const nounIndex = Math.abs(nounHash) % nouns.length;
+            
+            // 生成数字后缀（1-999）
+            const number = (hash % 999) + 1;
+            
+            return `${adjectives[adjIndex]}${nouns[nounIndex]}${number}`;
+        }
+
+        // 加载帖子（支持分页）
+        function loadPosts(page = 1) {
+            currentPage = page;
+            const myDeviceId = getDeviceId();
+            console.log('🔍 加载帖子，当前设备ID:', myDeviceId);
+            
+            fetch(`/api/forum/posts?page=${page}&pageSize=20`)
+                .then(res => res.json())
+                .then(data => {
+                    posts = data.posts || [];
+                    
+                    // 调试：输出评论信息
+                    posts.forEach(post => {
+                        if (post.comments && post.comments.length > 0) {
+                            console.log(`📝 帖子 ${post.id} 的评论:`, post.comments.map(c => ({
+                                id: c.id,
+                                device_id: c.device_id,
+                                isMyComment: c.device_id === myDeviceId,
+                                timestamp: new Date(c.timestamp).toLocaleString()
+                            })));
+                        }
+                    });
+                    totalPages = data.pagination?.totalPages || 1;
+                    totalCount = data.pagination?.totalCount || 0;
+                    
+                    // 检查是否有旧评论（没有device_id）
+                    let hasOldComments = false;
+                    posts.forEach(post => {
+                        if (post.comments && post.comments.some(c => !c.device_id)) {
+                            hasOldComments = true;
+                        }
+                    });
+                    
+                    if (hasOldComments) {
+                        console.warn('⚠️ 检测到旧评论（没有device_id），这些评论无法删除。请发布新评论来测试删除功能。');
+                    }
+                    
+                    renderPosts();
+                    renderPagination();
+                    updateStats();
+                })
+                .catch(err => {
+                    document.getElementById('posts-container').innerHTML = 
+                        '<div class="empty"><div class="empty-icon">😕</div><p>加载失败，请刷新重试</p></div>';
+                    console.error(err);
+                });
+        }
+
+        // 渲染帖子
+        function renderPosts() {
+            const container = document.getElementById('posts-container');
+            
+            if (posts.length === 0) {
+                container.innerHTML = '<div class="empty"><div class="empty-icon">📭</div><p>还没有心声，快来发表第一条吧！</p></div>';
+                return;
+            }
+
+            container.innerHTML = posts.map((post, index) => {
+                const isLiked = myLikes.includes(post.id);
+                const timeAgo = getTimeAgo(post.timestamp);
+                const comments = post.comments || [];
+                const hasComments = comments.length > 0;
+                const myDeviceId = getDeviceId();
+                const isMyPost = post.device_id && post.device_id === myDeviceId;
+                const withinTimeLimit = canDeleteComment(post.timestamp);
+                const canDeletePost = isMyPost && withinTimeLimit;
+                
+                return `
+                    <div class="post-card" id="post-${post.id}">
+                        <div class="post-header">
+                            <div class="post-author">
+                                <div class="avatar">${getAvatar(post.device_id || post.id)}</div>
+                                <span>${post.device_id ? getAnonymousName(post.device_id) : '匿名用户 #' + String(post.id).slice(-4)}</span>
+                            </div>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <div class="post-time">${timeAgo}${canDeletePost ? ' · <span style="color: #ff9800;">可删除</span>' : ''}</div>
+                                ${canDeletePost ? `
+                                    <button class="comment-delete-btn" onclick="deletePost(${post.id})" title="删除帖子（30分钟内，会同时删除所有评论）">
+                                        🗑️
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                        <div class="post-content">${escapeHtml(post.content)}</div>
+                        <div class="post-footer">
+                            <div class="post-action ${isLiked ? 'liked' : ''}" onclick="toggleLike(${post.id}, event)">
+                                <span>${isLiked ? '❤️' : '🤍'}</span>
+                                <span id="like-count-${post.id}">${post.likes}</span>
+                            </div>
+                            <div class="post-action" onclick="toggleCommentInput(${post.id})">
+                                💬 ${comments.length}
+                            </div>
+                        </div>
+                        ${hasComments ? `
+                            <div class="comments-section" id="comments-${post.id}">
+                                ${comments.map(comment => {
+                                    const myDeviceId = getDeviceId();
+                                    // 检查是否是自己的评论
+                                    const isMyComment = comment.device_id && comment.device_id === myDeviceId;
+                                    // 检查是否在30分钟内
+                                    const withinTimeLimit = canDeleteComment(comment.timestamp);
+                                    // 可以删除的条件：是自己的评论 且 在30分钟内
+                                    const canDelete = isMyComment && withinTimeLimit;
+                                    
+                                    // 详细调试信息（所有评论都输出）
+                                    const debugInfo = {
+                                        myDeviceId: myDeviceId,
+                                        commentDeviceId: comment.device_id || '(null)',
+                                        commentDeviceIdType: typeof comment.device_id,
+                                        commentDeviceIdValue: comment.device_id,
+                                        hasDeviceId: !!comment.device_id,
+                                        isMyComment: isMyComment,
+                                        withinTimeLimit: withinTimeLimit,
+                                        canDelete: canDelete,
+                                        timeAgo: getTimeAgo(comment.timestamp),
+                                        timestamp: comment.timestamp,
+                                        now: Date.now(),
+                                        timeDiff: Date.now() - comment.timestamp,
+                                        thirtyMinutes: 30 * 60 * 1000
+                                    };
+                                    
+                                    // 如果device_id为null，给出明确提示
+                                    if (!comment.device_id) {
+                                        console.warn(`⚠️ 评论 ${comment.id} 没有 device_id！`, {
+                                            ...debugInfo,
+                                            reason: '这可能是旧评论（在添加删除功能之前发布的），或者保存时出错'
+                                        });
+                                    } else {
+                                        console.log(`评论 ${comment.id} 详情:`, debugInfo);
+                                    }
+                                    
+                                    // 调试：如果没有device_id，显示提示
+                                    const debugText = !comment.device_id ? ' (旧评论，无device_id)' : '';
+                                    
+                                    return `
+                                        <div class="comment-item" id="comment-${comment.id}">
+                                            <div class="comment-avatar">${getAvatar(comment.device_id || comment.id)}</div>
+                                            <div class="comment-content" style="flex: 1;">
+                                                <div class="comment-author" style="font-size: 11px; color: #999; margin-bottom: 2px;">
+                                                    ${comment.device_id ? getAnonymousName(comment.device_id) : '匿名用户'}
+                                                </div>
+                                                ${escapeHtml(comment.content)}
+                                                <div class="comment-time">
+                                                    ${getTimeAgo(comment.timestamp)}${debugText}
+                                                    ${canDelete ? ' · <span style="color: #ff9800;">可删除</span>' : ''}
+                                                    ${isMyComment && !withinTimeLimit ? ' · <span style="color: #999;">已超过30分钟</span>' : ''}
+                                                    ${comment.device_id && !isMyComment ? ' · <span style="color: #999;">(他人评论)</span>' : ''}
+                                                </div>
+                                            </div>
+                                            ${canDelete ? `
+                                                <button class="comment-delete-btn" onclick="deleteComment(${comment.id}, ${post.id})" title="删除评论（30分钟内）">
+                                                    🗑️
+                                                </button>
+                                            ` : ''}
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        ` : ''}
+                        <div class="comment-input-box" id="comment-input-${post.id}" style="display: none;">
+                            <input type="text" class="comment-input" id="comment-text-${post.id}" placeholder="说点什么..." maxlength="200" onkeypress="if(event.key==='Enter') submitComment(${post.id})">
+                            <button class="comment-btn" onclick="submitComment(${post.id})">发送</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 更新统计
+        function updateStats() {
+            document.getElementById('total-posts').innerText = posts.length;
+            const totalLikes = posts.reduce((sum, post) => sum + post.likes, 0);
+            document.getElementById('total-likes').innerText = totalLikes;
+        }
+
+        // 打开发布弹窗
+        function openModal() {
+            document.getElementById('post-modal').classList.add('active');
+            document.getElementById('post-content').value = '';
+            updateCharCount();
+        }
+
+        // 关闭弹窗
+        function closeModal() {
+            document.getElementById('post-modal').classList.remove('active');
+        }
+
+        // 更新字数统计
+        function updateCharCount() {
+            const content = document.getElementById('post-content').value;
+            document.getElementById('char-count').innerText = content.length;
+        }
+
+        // 提交帖子
+        function submitPost() {
+            const content = document.getElementById('post-content').value.trim();
+            
+            if (!content) {
+                showToast('请输入内容');
+                return;
+            }
+
+            if (content.length < 5) {
+                showToast('内容太短啦，至少5个字');
+                return;
+            }
+
+            const deviceId = getDeviceId();
+            console.log('📤 提交帖子:', { 
+                content: content.substring(0, 30), 
+                deviceId: deviceId,
+                deviceIdType: typeof deviceId
+            });
+            
+            if (!deviceId) {
+                console.error('❌ 设备ID为空！无法提交帖子');
+                showToast('❌ 设备ID获取失败，请刷新页面重试');
+                return;
+            }
+
+            fetch('/api/forum/post', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content, deviceId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('✅ 发布成功！');
+                    closeModal();
+                    loadPosts();
+                } else {
+                    showToast('发布失败');
+                }
+            })
+            .catch(err => {
+                showToast('网络错误');
+                console.error(err);
+            });
+        }
+
+        // 点赞/取消点赞
+        function toggleLike(postId, event) {
+            const isLiked = myLikes.includes(postId);
+            const action = isLiked ? 'unlike' : 'like';
+
+            // 立即更新UI（乐观更新）
+            const post = posts.find(p => p.id === postId);
+            if (post) {
+                // 立即更新本地数据
+                if (action === 'like') {
+                    myLikes.push(postId);
+                    post.likes += 1;
+                } else {
+                    myLikes = myLikes.filter(id => id !== postId);
+                    post.likes = Math.max(0, post.likes - 1);
+                }
+                localStorage.setItem('forum_likes', JSON.stringify(myLikes));
+                
+                // 立即更新UI
+                const likeCountEl = document.getElementById('like-count-' + postId);
+                if (likeCountEl) {
+                    likeCountEl.innerText = post.likes;
+                }
+                
+                if (event && event.currentTarget) {
+                    const actionEl = event.currentTarget;
+                    if (action === 'like') {
+                        actionEl.classList.add('liked');
+                        actionEl.querySelector('span:first-child').innerText = '❤️';
+                    } else {
+                        actionEl.classList.remove('liked');
+                        actionEl.querySelector('span:first-child').innerText = '🤍';
+                    }
+                }
+                updateStats();
+                showToast(action === 'like' ? '✅ 已点赞' : '已取消点赞');
+            }
+
+            // 发送到服务器（后台同步）
+            fetch('/api/forum/like', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ postId, action })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    // 用服务器返回的真实数据更新
+                    if (post) {
+                        post.likes = data.likes;
+                        const likeCountEl = document.getElementById('like-count-' + postId);
+                        if (likeCountEl) {
+                            likeCountEl.innerText = data.likes;
+                        }
+                        updateStats();
+                    }
+                } else {
+                    // 失败时回滚
+                    if (action === 'like') {
+                        myLikes = myLikes.filter(id => id !== postId);
+                    } else {
+                        myLikes.push(postId);
+                    }
+                    localStorage.setItem('forum_likes', JSON.stringify(myLikes));
+                    renderPosts(); // 重新渲染
+                    showToast('操作失败');
+                }
+            })
+            .catch(err => {
+                // 网络错误时回滚
+                if (action === 'like') {
+                    myLikes = myLikes.filter(id => id !== postId);
+                } else {
+                    myLikes.push(postId);
+                }
+                localStorage.setItem('forum_likes', JSON.stringify(myLikes));
+                renderPosts();
+                showToast('网络错误');
+                console.error(err);
+            });
+        }
+
+        // 获取头像表情（基于device_id，确保同一用户头像一致）
+        function getAvatar(deviceId) {
+            if (!deviceId) {
+                const avatars = ['😊', '😎', '🤓', '😇', '🥳', '🤩', '😺', '🦊', '🐼', '🐨'];
+                return avatars[0]; // 默认头像
+            }
+            
+            const avatars = ['😊', '😎', '🤓', '😇', '🥳', '🤩', '😺', '🦊', '🐼', '🐨', '🐻', '🐰', '🐱', '🐶', '🐹', '🐭'];
+            
+            // 使用device_id生成固定的索引
+            let hash = 0;
+            for (let i = 0; i < deviceId.length; i++) {
+                const char = deviceId.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            
+            return avatars[Math.abs(hash) % avatars.length];
+        }
+
+        // 获取相对时间
+        function getTimeAgo(timestamp) {
+            const now = Date.now();
+            const diff = now - timestamp;
+            const seconds = Math.floor(diff / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+
+            if (days > 0) return days + '天前';
+            if (hours > 0) return hours + '小时前';
+            if (minutes > 0) return minutes + '分钟前';
+            return '刚刚';
+        }
+
+        // HTML 转义
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML.replace(/\n/g, '<br>');
+        }
+
+        // 显示提示
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 2000);
+        }
+
+        // 渲染分页
+        function renderPagination() {
+            const paginationEl = document.getElementById('pagination');
+            if (!paginationEl) return;
+            
+            if (totalPages <= 1) {
+                paginationEl.innerHTML = '';
+                return;
+            }
+            
+            paginationEl.innerHTML = `
+                <button class="page-btn" onclick="loadPosts(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+                    上一页
+                </button>
+                <span class="page-info">第 ${currentPage} / ${totalPages} 页</span>
+                <button class="page-btn" onclick="loadPosts(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+                    下一页
+                </button>
+            `;
+        }
+
+        // 切换评论输入框
+        function toggleCommentInput(postId) {
+            const inputBox = document.getElementById(`comment-input-${postId}`);
+            const commentsSection = document.getElementById(`comments-${postId}`);
+            
+            if (inputBox) {
+                const isVisible = inputBox.style.display !== 'none';
+                inputBox.style.display = isVisible ? 'none' : 'flex';
+                
+                // 如果评论区域隐藏，也显示出来
+                if (commentsSection && !isVisible) {
+                    commentsSection.style.display = commentsSection.style.display === 'none' ? 'block' : 'block';
+                }
+                
+                if (!isVisible) {
+                    const input = document.getElementById(`comment-text-${postId}`);
+                    if (input) {
+                        setTimeout(() => input.focus(), 100);
+                    }
+                }
+            }
+        }
+
+        // 判断是否可以删除评论（30分钟内）
+        function canDeleteComment(timestamp) {
+            const now = Date.now();
+            const commentTime = timestamp;
+            const timeDiff = now - commentTime;
+            const thirtyMinutes = 30 * 60 * 1000; // 30分钟（毫秒）
+            return timeDiff <= thirtyMinutes;
+        }
+
+        // 提交评论
+        function submitComment(postId) {
+            const input = document.getElementById(`comment-text-${postId}`);
+            if (!input) return;
+            
+            const content = input.value.trim();
+            if (!content || content.length < 2) {
+                showToast('评论至少2个字');
+                return;
+            }
+            
+            if (content.length > 200) {
+                showToast('评论最多200字');
+                return;
+            }
+            
+            // 禁用输入框和按钮
+            input.disabled = true;
+            const btn = input.nextElementSibling;
+            if (btn) btn.disabled = true;
+            
+            const deviceId = getDeviceId();
+            console.log('📤 提交评论:', { 
+                postId, 
+                content: content.substring(0, 20), 
+                deviceId: deviceId,
+                deviceIdType: typeof deviceId,
+                deviceIdLength: deviceId ? deviceId.length : 0
+            });
+            
+            if (!deviceId) {
+                console.error('❌ 设备ID为空！无法提交评论');
+                showToast('❌ 设备ID获取失败，请刷新页面重试');
+                input.disabled = false;
+                if (btn) btn.disabled = false;
+                return;
+            }
+            
+            const requestBody = { postId, content, deviceId };
+            console.log('📤 请求体:', requestBody);
+            
+            fetch('/api/forum/comment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestBody)
+            })
+            .then(res => {
+                console.log('📥 服务器响应状态:', res.status);
+                if (!res.ok) {
+                    return res.json().then(err => {
+                        console.error('❌ 服务器错误:', err);
+                        throw new Error(err.error || '请求失败');
+                    });
+                }
+                return res.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    input.value = '';
+                    showToast('✅ 评论成功！');
+                    console.log('✅ 评论发布成功，ID:', data.id, '设备ID:', deviceId);
+                    // 隐藏输入框
+                    const inputBox = document.getElementById(`comment-input-${postId}`);
+                    if (inputBox) inputBox.style.display = 'none';
+                    // 重新加载当前页
+                    setTimeout(() => {
+                        loadPosts(currentPage);
+                        // 加载后检查新评论是否有删除按钮
+                        setTimeout(() => {
+                            const newComment = document.getElementById(`comment-${data.id}`);
+                            if (newComment) {
+                                const deleteBtn = newComment.querySelector('.comment-delete-btn');
+                                if (deleteBtn) {
+                                    console.log('✅ 新评论已显示删除按钮！');
+                                    showToast('✅ 新评论已显示删除按钮，可以删除！');
+                                } else {
+                                    console.warn('⚠️ 新评论没有删除按钮！请检查控制台调试信息');
+                                    showToast('⚠️ 新评论没有删除按钮，请查看控制台');
+                                }
+                            }
+                        }, 500);
+                    }, 300);
+                } else {
+                    showToast('评论失败');
+                    input.disabled = false;
+                    if (btn) btn.disabled = false;
+                }
+            })
+            .catch(err => {
+                console.error('❌ 提交评论失败:', err);
+                showToast(err.message || '网络错误');
+                input.disabled = false;
+                if (btn) btn.disabled = false;
+            });
+        }
+
+        // 删除评论
+        function deleteComment(commentId, postId) {
+            if (!confirm('确定要删除这条评论吗？\n（评论超过30分钟后将无法删除）')) {
+                return;
+            }
+            
+            const deviceId = getDeviceId();
+            
+            fetch(`/api/forum/comment/${commentId}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ deviceId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('✅ 评论已删除');
+                    // 重新加载当前页
+                    loadPosts(currentPage);
+                } else {
+                    showToast(data.error || '删除失败');
+                }
+            })
+            .catch(err => {
+                showToast('网络错误');
+                console.error(err);
+            });
+        }
+
+        // 删除帖子
+        function deletePost(postId) {
+            if (!confirm('确定要删除这条帖子吗？\n（帖子超过30分钟后将无法删除，删除后会同时删除所有评论）')) {
+                return;
+            }
+            
+            const deviceId = getDeviceId();
+            
+            fetch(`/api/forum/post/${postId}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ deviceId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('✅ 帖子已删除（所有评论也已删除）');
+                    // 重新加载当前页
+                    loadPosts(currentPage);
+                } else {
+                    showToast(data.error || '删除失败');
+                }
+            })
+            .catch(err => {
+                showToast('网络错误');
+                console.error(err);
+            });
+        }
+
+        // 页面加载
+        loadPosts();
+    </script>
+</body>
+</html>
+
+
