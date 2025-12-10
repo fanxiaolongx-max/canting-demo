@@ -1,22 +1,43 @@
+// server.js 头部区域
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
 const QRCode = require('qrcode');
-const db = require('./db');  // 引入数据库模块
+const db = require('./db');
 
 const app = express();
-const PORT = 3010;
+
+// --- 修改 1: 适配 Fly.io 的端口 (fly.toml 中是 3000) ---
+const PORT = process.env.PORT || 3010; 
 
 app.use(express.json());
-app.use(express.static(__dirname));
 
-const BACKUP_DIR = path.join(__dirname, 'backups');
+// --- 修改 2: 静态文件处理 (关键) ---
+// 检测生产环境
+const IS_PROD = fs.existsSync('/data');
 
-// 创建备份目录
-if (!fs.existsSync(BACKUP_DIR)) {
-    fs.mkdirSync(BACKUP_DIR);
+// 定义图片存储目录
+const STATIC_DIR = IS_PROD ? '/data/static' : path.join(__dirname, 'static');
+
+// 确保图片目录存在
+if (!fs.existsSync(STATIC_DIR)) {
+    fs.mkdirSync(STATIC_DIR, { recursive: true });
 }
+
+// 定义备份目录
+const BACKUP_DIR = IS_PROD ? '/data/backups' : path.join(__dirname, 'backups');
+
+// 确保备份目录存在
+if (!fs.existsSync(BACKUP_DIR)) {
+    fs.mkdirSync(BACKUP_DIR, { recursive: true });
+}
+
+// 托管静态文件：
+// 1. 托管代码里的静态文件 (如 css, js, 默认 logo)
+app.use(express.static(__dirname));
+// 2. 托管上传的图片 (映射 /static 路径到持久化目录)
+app.use('/static', express.static(STATIC_DIR));
 
 // 初始化数据库
 db.initDatabase();
