@@ -47,7 +47,8 @@ db.migrateFromJSON();
 // --- 配置图片上传 ---
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, 'static/')
+        // --- 修改 3: 使用上面定义的持久化 STATIC_DIR ---
+        cb(null, STATIC_DIR) 
     },
     filename: function (req, file, cb) {
         const ext = path.extname(file.originalname);
