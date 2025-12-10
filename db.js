@@ -3,7 +3,18 @@ const Database = require('better-sqlite3');
 const path = require('path');
 const fs = require('fs');
 
-const DB_PATH = path.join(__dirname, 'restaurant.db');
+// const DB_PATH = path.join(__dirname, 'restaurant.db');
+// --- 修改开始 ---
+// 检测是否存在 /data 目录 (Fly.io 挂载点)
+const IS_PROD = fs.existsSync('/data');
+
+// 如果在生产环境，数据库存放在 /data，否则存放在当前目录
+const DB_PATH = IS_PROD 
+    ? path.join('/data', 'restaurant.db') 
+    : path.join(__dirname, 'restaurant.db');
+
+console.log(`📂 数据库路径: ${DB_PATH}`);
+// --- 修改结束 ---
 
 // 创建数据库连接
 const db = new Database(DB_PATH);
