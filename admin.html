@@ -981,7 +981,7 @@
         }
 
         // 初始化
-        // --- 智能导入功能 (增强版) ---
+        // --- 智能导入功能 (定制版) ---
         function openSmartImport() {
             document.getElementById('smart-import-modal').style.display = 'flex';
             document.getElementById('import-text').value = '';
@@ -997,98 +997,131 @@
             const lines = text.split('\n');
             parsedDishes = [];
             
-            // 1. 定义忽略关键词 (严格黑名单)
-            const ignoreKeywords = new Set([
-                'SV餐厅', '美食推荐', '本周', '主厨', '副厨', '面档', '明档',
-                '荤菜', '素菜', '粗粮', '鲜榨', '果汁', '主食', '汤类', '面食',
-                '温馨提示', '充值', '接口人', '时间', '余额', '浪费', '光盘',
-                '建议', '愉快', '欢迎', '提供', '宝贵', '关注', '及时', '合理',
-                '拿取', '拒绝', '倡导', '工作日', '周日', '周四', '上午', '下午',
-                '9am', '5pm', 'WX', '玛丽', '餐卡', '伙伴们', 'money', '💰',
-                '太阳', '玫瑰', '杂粮饭', '馒头' // 主食一般不参与投票，也可以屏蔽
-            ]);
-        
-            // 2. 提取厨师信息
+            // 1. 提取厨师信息 (预扫描)
             let mainChef = '当日厨师'; // 默认主厨
             let noodleChef = '';       // 面档师傅
+            let grillChef = '';        // 明档/铁板师傅
         
-            // 预扫描一遍找厨师
             lines.forEach(line => {
-                const clean = line.replace(/[:：]/g, ':');
-                if (clean.includes('主厨:')) {
-                    // 提取冒号后的第一个名字 (假设名字在2-4个字之间)
-                    const names = clean.split(':')[1].trim().split(/\s+/);
+                const clean = line.replace(/[:：]/g, ':').trim();
+                // 提取主厨 (取冒号后第一个名字)
+                if (clean.startsWith('本周主厨') || clean.startsWith('主厨')) {
+                    const names = clean.split(':')[1]?.trim().split(/\s+/) || [];
                     if (names[0] && names[0].length < 5) mainChef = names[0];
                 }
-                if (clean.includes('面档:')) {
-                    const names = clean.split(':')[1].trim().split(/\s+/);
+                // 提取面档师傅
+                if (clean.startsWith('面档')) {
+                    const names = clean.split(':')[1]?.trim().split(/\s+/) || [];
                     if (names[0] && names[0].length < 5) noodleChef = names[0];
+                }
+                // 提取明档师傅 (如果有)
+                if (clean.startsWith('明档') && clean.includes('师傅')) { // 防止把"明档: 羊肉串"误判为厨师
+                     const names = clean.split(':')[1]?.trim().split(/\s+/) || [];
+                     if (names[0] && names[0].length < 5) grillChef = names[0];
                 }
             });
         
-            // 如果没找到面档师傅，就默认都归主厨
+            // 默认回退机制
             if (!noodleChef) noodleChef = mainChef;
+            if (!grillChef) grillChef = mainChef;
         
-            console.log(`识别到主厨: ${mainChef}, 面档: ${noodleChef}`);
+            console.log(`识别厨师 -> 主厨:${mainChef}, 面档:${noodleChef}, 明档:${grillChef}`);
         
-            // 3. 逐行解析菜品
-            let currentChef = mainChef; // 当前上下文的厨师 (默认为主厨)
-            let stopParsing = false;    // 遇到页脚停止解析标志
+            // 2. 逐行解析菜品
+            // 状态机：记录当前正在处理哪个分类
+            let currentCategory = 'unknown'; // 初始状态
+            let currentChef = mainChef;
+            
+            // 定义有效分类关键词 (白名单)
+            const validCategories = {
+                '荤菜': mainChef,
+                '素菜': mainChef,
+                '粗粮': mainChef,
+                '汤类': mainChef,
+                '明档': grillChef,
+                '面食': noodleChef,
+                '面档': noodleChef
+            };
+        
+            // 定义忽略分类关键词 (黑名单)
+            const ignoreCategories = ['鲜榨果汁', '果汁', '主食', '温馨提示'];
+        
+            // 定义强制结束关键词
+            const stopKeywords = ['祝大家用餐愉快', '欢迎大家提供宝贵建议', '温馨提示'];
+        
+            let stopParsing = false;
         
             lines.forEach(line => {
                 if (stopParsing) return;
-                
+        
                 let cleanLine = line.trim();
                 if (!cleanLine) return;
         
-                // 🛑 停止规则：遇到这些词，说明正文结束了，后面都是废话
-                if (cleanLine.includes('温馨提示') || cleanLine.includes('祝大家') || cleanLine.includes('欢迎大家')) {
+                // A. 检查是否需要停止解析 (页脚)
+                if (stopKeywords.some(kw => cleanLine.includes(kw))) {
                     stopParsing = true;
                     return;
                 }
         
-                // 🔄 厨师切换规则
-                // 如果这一行包含“面食”或“面档”，或者是面食分类下的内容 -> 切换为面档厨师
-                if (cleanLine.includes('面食') || cleanLine.includes('面档')) {
-                    currentChef = noodleChef;
-                }
-                // 如果是其他分类 (明档/荤菜/素菜等) -> 切换回主厨
-                else if (cleanLine.match(/(明档|荤菜|素菜|粗粮|汤类|主食)/)) {
-                    currentChef = mainChef;
-                }
-        
-                // 🧹 清理行内容 (保留冒号后面的部分，去除前缀)
-                // 例如: "🍜面食:面条" -> "面条" ; "🐮:小炒黄牛肉" -> "小炒黄牛肉"
-                cleanLine = cleanLine.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '') // 去除Emoji
-                                     .replace(/[\[\]]/g, '') // 去除[]
-                                     .trim();
-        
-                // 如果包含冒号，通常冒号前是分类，冒号后是菜
-                if (cleanLine.includes(':') || cleanLine.includes('：')) {
-                    const parts = cleanLine.split(/[:：]/);
-                    // 如果冒号后面有内容，取冒号后面的；否则(比如"荤菜：")取下一行
-                    if (parts[1] && parts[1].trim()) {
-                        cleanLine = parts[1];
-                    } else {
-                        return; // 只是个标题行，跳过
+                // B. 检查是否是分类标题行
+                // 移除Emoji和特殊符号来判断标题
+                let headerText = cleanLine.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '').replace(/[🍽🥙🍠🥣🍜]/g, '').trim();
+                
+                // 检查是否命中黑名单分类 (果汁、主食) -> 标记为忽略状态
+                for (const badCat of ignoreCategories) {
+                    if (headerText.startsWith(badCat) || headerText.includes(badCat + ':') || headerText.includes(badCat + '：')) {
+                        currentCategory = 'ignore';
+                        return; // 跳过标题行本身
                     }
                 }
         
-                // 分割一行中的多个菜品 (空格分隔)
-                const items = cleanLine.split(/\s+/);
-                
-                items.forEach(item => {
-                    item = item.trim();
-                    // 🔍 过滤规则：
-                    // 1. 长度必须大于1
-                    // 2. 不能包含数字 (过滤电话号、时间、金额)
-                    // 3. 不能在黑名单里
-                    if (item.length > 1 && 
-                        !/\d/.test(item) && 
-                        !ignoreKeywords.has(item) &&
-                        !item.includes('微信') &&
-                        !item.includes('接口')) {
+                // 检查是否命中白名单分类 (荤菜、素菜等) -> 切换厨师
+                for (const cat in validCategories) {
+                    if (headerText.startsWith(cat) || headerText.includes(cat + ':') || headerText.includes(cat + '：')) {
+                        currentCategory = cat;
+                        currentChef = validCategories[cat];
                         
+                        // 如果标题行本身包含了菜品 (例如 "明档: 羊肉串")，需要提取冒号后面的内容
+                        if (cleanLine.includes(':') || cleanLine.includes('：')) {
+                            const parts = cleanLine.split(/[:：]/);
+                            if (parts[1]) cleanLine = parts[1]; // 保留冒号后的内容继续处理
+                            else return; // 只是标题，跳过
+                        } else {
+                            return; // 只是标题，跳过
+                        }
+                        break; 
+                    }
+                }
+        
+                // C. 处理菜品内容
+                // 如果当前处于忽略分类 (果汁/主食)，直接跳过
+                if (currentCategory === 'ignore') return;
+        
+                // 尚未进入任何有效分类 (还在头部厨师介绍区域)，跳过
+                // *除非* 您希望把"明档"之前的内容也识别。如果严格"从荤菜下一行"，可以在这里控制。
+                // 目前逻辑：只要匹配到有效分类就开始识别。
+                if (currentCategory === 'unknown' && !cleanLine.match(/(明档|铁板)/)) { 
+                     // 简单的防误判：如果还没遇到分类标题，且这行不像菜品，就跳过
+                     return; 
+                }
+        
+                // D. 清洗菜品文本
+                cleanLine = cleanLine.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '') // 去除Emoji
+                                     .replace(/[\[\]🐮🐟🐔🥩🥒🍆🥬🍍🥑🧋🙋🏻‍♀️🙅🏻‍♀️🙅🏻‍♂️💰]/g, '') // 去除特定图标
+                                     .replace(/^[:：]/, '') // 去除开头的冒号
+                                     .trim();
+        
+                // 再次过滤：如果是纯干扰行 (如分隔符)
+                if (cleanLine.includes('太阳') || cleanLine.length < 2) return;
+        
+                // E. 分割并添加 (支持一行多个菜，空格分隔)
+                const items = cleanLine.split(/\s+/);
+                items.forEach(item => {
+                    // 最终过滤规则：
+                    // 1. 长度 > 1
+                    // 2. 不包含数字 (过滤电话、时间)
+                    // 3. 不包含干扰词
+                    if (item.length > 1 && !/\d/.test(item) && !item.includes('微信')) {
                         parsedDishes.push({ name: item, chef: currentChef });
                     }
                 });
@@ -1109,16 +1142,18 @@
             }
         
             parsedDishes.forEach((dish, index) => {
-                // 根据厨师不同显示不同颜色
-                const isNoodle = dish.chef !== '当日厨师' && dish.chef !== parsedDishes[0].chef; 
-                
+                // 高亮显示面档和明档的菜，方便确认
+                let chefStyle = '';
+                if (dish.chef.includes('主厨')) chefStyle = 'color:#333;';
+                else chefStyle = 'color:#e65100; font-weight:bold;'; // 面档/明档高亮
+        
                 tbody.innerHTML += `
                     <tr style="border-bottom:1px solid #eee;">
                         <td style="padding:8px;">
                             <input type="text" value="${dish.name}" class="table-input" onchange="parsedDishes[${index}].name = this.value">
                         </td>
                         <td style="padding:8px;">
-                            <input type="text" value="${dish.chef}" class="table-input" onchange="parsedDishes[${index}].chef = this.value" style="${isNoodle ? 'color:#e65100; font-weight:bold;' : ''}">
+                            <input type="text" value="${dish.chef}" class="table-input" style="${chefStyle}" onchange="parsedDishes[${index}].chef = this.value">
                         </td>
                         <td style="padding:8px; text-align:center;">
                             <button class="btn btn-danger" style="padding:2px 6px; font-size:12px;" onclick="removeParsedDish(${index})">×</button>
@@ -1138,8 +1173,6 @@
             if (!confirm(`确认导入 ${parsedDishes.length} 道菜品吗？`)) return;
             
             let count = 0;
-            // 反转数组，让菜单顶部的菜在数据库里也靠前 (如果是自增ID的话)
-            // 或者保持原样。这里保持原样。
             for (const dish of parsedDishes) {
                 try {
                     await fetch('/api/admin/dishes', {
@@ -1158,7 +1191,7 @@
             
             showToast(`成功导入 ${count} 道菜品`, 'success');
             document.getElementById('smart-import-modal').style.display = 'none';
-            loadDishes(); // 刷新列表
+            loadDishes();
         }
         // --- 智能导入功能 (增强版) ---END
         
