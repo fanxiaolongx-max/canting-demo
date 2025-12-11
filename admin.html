@@ -982,7 +982,7 @@
         }
 
         // 初始化
-        // --- 智能导入功能 (全能终极版) ---
+        // --- 智能导入功能 (空格/表情修复版) ---
         function openSmartImport() {
             document.getElementById('smart-import-modal').style.display = 'flex';
             document.getElementById('import-text').value = '';
@@ -1042,42 +1042,36 @@
         }
         
         // ==========================================
-        // 模式 A: 早餐解析引擎 (清单式)
+        // 模式 A: 早餐解析引擎
         // ==========================================
         function parseBreakfastMode(lines) {
             let mainChef = '早餐厨师';
             
-            // 1. 提取厨师 (通常只有一行: "厨师:丁科")
             lines.forEach(line => {
                 if (line.includes('厨师') || line.includes('主厨')) {
                     const parts = line.replace(/[:：]/g, ':').split(':');
                     if (parts[1]) {
-                        const name = parts[1].replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '').trim(); // 去emoji
+                        const name = parts[1].replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '').trim(); 
                         if (isValidName(name)) mainChef = name;
                     }
                 }
             });
         
-            // 2. 提取菜品
-            // 早餐的特点是每一行基本都是菜，除了特定的标题
             const ignoreHeaders = ['中式早餐', '西点', '饮品', '水果', '欢迎您', 'SV餐厅'];
             
             lines.forEach(line => {
-                // 跳过包含"厨师"的行
                 if (line.includes('厨师') || line.includes('主厨')) return;
                 
-                // 清洗文本 (移除所有中括号内容如[庆祝]、[蛋糕] 和 Emoji)
-                let clean = line.replace(/\[.*?\]/g, '') // 去除 [xxx]
-                                .replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '') // 去除 Emoji
-                                .replace(/[🍳🥘🐟🍔🍓🦐🍜🍉🥬🍞🥞🍕🥦🌽🥛🥚🥤]/g, '') // 去除特定图标
+                // 清洗文本: 移除 [xxx] 和 emoji
+                let clean = line.replace(/\[.*?\]/g, '') // 移除 [庆祝] [玫瑰] 等
+                                .replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '') 
+                                .replace(/[🍳🥘🐟🍔🍓🦐🍜🍉🥬🍞🥞🍕🥦🌽🥛🥚🥤]/g, '')
                                 .trim();
         
-                // 过滤规则
                 if (clean.length < 2) return;
-                if (ignoreHeaders.some(h => clean.includes(h))) return; // 跳过小标题
-                if (clean.includes('太阳') || clean.includes('祝大家')) return; // 跳过装饰
+                if (ignoreHeaders.some(h => clean.includes(h))) return;
+                if (clean.includes('太阳') || clean.includes('祝大家')) return;
         
-                // 早餐经常有一行多个的情况，或者用斜杠分割 "茶叶蛋/水煮蛋"
                 const items = clean.split(/[\s\/]+/); 
                 items.forEach(item => {
                     if (item.length > 1 && !/\d/.test(item)) {
@@ -1088,11 +1082,10 @@
         }
         
         // ==========================================
-        // 模式 B: 夜宵解析引擎 (简报式)
+        // 模式 B: 夜宵解析引擎
         // ==========================================
         function parseNightSnackMode(lines) {
-            let currentChef = '夜宵厨师'; // 夜宵通常不写厨师名
-            let currentPrefix = '中式';   // 用于区分中餐/本地，加在菜名前面方便区分
+            let currentPrefix = '中式';
         
             lines.forEach(line => {
                 let clean = line.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '')
@@ -1101,7 +1094,6 @@
                 if (clean.length < 2) return;
                 if (clean.includes('祝大家') || clean.includes('欢迎')) return;
         
-                // 切换分类前缀
                 if (clean.includes('中餐') || clean.includes('今日菜单')) {
                     currentPrefix = '中式';
                     return;
@@ -1111,16 +1103,10 @@
                     return;
                 }
         
-                // 提取菜品
-                // 夜宵可能有 "🐔土豆烧鸡" 这种格式
                 clean = clean.replace(/[🐔🐟🥬🍪🍐🍠🧃🥚]/g, '').trim();
-                
-                // 过滤掉纯数量词 "一份", "一盒", "一只"
                 clean = clean.replace(/(一份|一盒|一只|一个)/g, '');
         
                 if (clean.length > 1) {
-                    // 将 "中式" 加在名字里或者作为备注? 这里直接作为菜名的一部分显示比较直观
-                    // 或者直接存菜名，厨师字段存 "中式/本地"
                     parsedDishes.push({ 
                         name: clean, 
                         chef: currentPrefix === '本地' ? '本地风味' : '中式夜宵' 
@@ -1130,55 +1116,48 @@
         }
         
         // ==========================================
-        // 模式 C: 午餐/晚餐解析引擎 (结构化)
+        // 模式 C: 午餐/晚餐解析引擎 (修复空格和表情)
         // ==========================================
         function parseLunchDinnerMode(lines) {
             // 1. 预扫描厨师
             let mainChefs = [];
             let noodleChef = '';       
             let grillChef = '';
-            let specialChef = ''; // 特色档
             const allChefNames = new Set(); 
         
             lines.forEach(line => {
                 const clean = line.replace(/[:：]/g, ':').trim();
-                // 主厨 (排除副厨)
                 if (clean.includes('主厨') && !clean.includes('副厨') && !clean.includes('面档')) {
                     const content = clean.split(':')[1];
                     if (content) content.trim().split(/\s+/).forEach(name => {
                         if (isValidName(name)) { mainChefs.push(name); allChefNames.add(name); }
                     });
                 }
-                // 副厨 (黑名单)
                 if (clean.includes('副厨')) {
                     (clean.split(':')[1]||clean).trim().split(/\s+/).forEach(n => { if(isValidName(n)) allChefNames.add(n); });
                 }
-                // 面档
                 if (clean.includes('面档')) {
                     const names = (clean.split(':')[1]||'').trim().split(/\s+/);
                     if (isValidName(names[0])) { noodleChef = names[0]; allChefNames.add(names[0]); }
                 }
-                // 明档/特色档 (通常没有名字，如果有名字则提取，没有则归主厨或单独分类)
-                // 您的晚餐示例里，"明档"和"特色档"后面跟的是菜名，不是人名！这是关键区别。
-                // 所以这里不从明档行提取人名，除非明确写了"师傅"。
             });
         
             const mainChefsString = mainChefs.length > 0 ? mainChefs.join(' ') : '当日厨师';
             if (!noodleChef) noodleChef = mainChefs[0] || '面档师傅';
-            if (!grillChef) grillChef = mainChefsString; // 默认归主厨
+            if (!grillChef) grillChef = mainChefsString; 
         
             // 2. 状态机解析
             let currentCategory = 'unknown'; 
             let currentChef = mainChefsString;
             
-            // 定义分类映射
+            // 允许带空格的匹配，例如 "明 档" -> 匹配 "明档"
             const validCategories = {
                 '荤菜': mainChefsString,
                 '素菜': mainChefsString,
                 '粗粮': mainChefsString,
                 '汤类': mainChefsString,
-                '明档': grillChef,      // 归主厨
-                '特色档': grillChef,    // 归主厨
+                '明档': grillChef,      
+                '特色档': grillChef,    
                 '面食': noodleChef,
                 '面档': noodleChef
             };
@@ -1198,10 +1177,12 @@
                     return;
                 }
         
-                // 识别标题
+                // 关键修复 1: 生成无空格、无符号的标题用于匹配
+                // "   明   档 :" -> "明档"
                 let headerText = cleanLine.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '')
                                           .replace(/[🍽🥙🍠🥣🍜]/g, '')
                                           .replace(/[:：]/g, '')
+                                          .replace(/\s+/g, '') // 移除所有空格
                                           .trim();
                 
                 // 检查忽略
@@ -1215,13 +1196,14 @@
                         currentCategory = 'active';
                         currentChef = validCategories[cat];
                         
-                        // 处理同一行的内容 (如 "明档: 酸菜牛肉包")
+                        // 关键修复 3: 处理同一行的内容，并在分类检测通过后，移除分类前缀
+                        // "明 档: 酸菜牛肉包" -> 识别为 明档 -> 提取 "酸菜牛肉包"
                         if (cleanLine.includes(':') || cleanLine.includes('：')) {
                             const parts = cleanLine.split(/[:：]/);
-                            if (parts[1]) cleanLine = parts[1];
+                            if (parts[1]) cleanLine = parts[1]; // 取冒号后的内容作为菜品
                             else return;
                         } else {
-                            return; 
+                            return; // 纯标题行，跳过
                         }
                         break; 
                     }
@@ -1229,10 +1211,11 @@
         
                 if (currentCategory === 'unknown' || currentCategory === 'ignore') return;
         
-                // 清洗内容
-                cleanLine = cleanLine.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '') // Emoji
-                                     .replace(/[\[\]🐮🐟🐔🥩🥒🍆🥬🍍🥑🧋🦞🐂🎃🫓]/g, '') // 各种食材图标
-                                     .replace(/^[:：]/, '')
+                // 关键修复 2: 清洗内容，移除 [玫瑰] 等
+                cleanLine = cleanLine.replace(/\[.*?\]/g, '') // 移除所有中括号内容
+                                     .replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '') // Emoji
+                                     .replace(/[\[\]🐮🐟🐔🥩🥒🍆🥬🍍🥑🧋🦞🐂🎃🫓]/g, '') // 食材图标
+                                     .replace(/^[:：]/, '') // 移除行首可能残留的冒号
                                      .trim();
         
                 if (cleanLine.includes('月亮') || cleanLine.includes('太阳') || cleanLine.length < 2) return;
