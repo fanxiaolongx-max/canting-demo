@@ -981,7 +981,7 @@
         }
 
         // 初始化
-        // --- 智能导入功能 (多主厨+自动清空版) ---
+        // --- 智能导入功能 (多主厨+自动清空+自动日期版) ---
         function openSmartImport() {
             document.getElementById('smart-import-modal').style.display = 'flex';
             document.getElementById('import-text').value = '';
@@ -997,11 +997,50 @@
             const lines = text.split('\n');
             parsedDishes = [];
             
+            // === 新增：自动识别日期和餐段 ===
+            const now = new Date();
+            // 格式化日期：2025-12-08
+            const datePart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            let mealPart = '';
+        
+            // 1. 尝试从文本中识别餐段
+            // 检查前5行通常能找到标题
+            const headerText = lines.slice(0, 10).join(' '); 
+            if (headerText.includes('早餐')) mealPart = '早餐';
+            else if (headerText.includes('午餐')) mealPart = '午餐';
+            else if (headerText.includes('晚餐')) mealPart = '晚餐';
+            
+            // 2. 如果文本没写，根据当前时间判断兜底
+            if (!mealPart) {
+                const hour = now.getHours();
+                if (hour < 10) mealPart = '早餐';
+                else if (hour < 15) mealPart = '午餐';
+                else mealPart = '晚餐';
+            }
+        
+            const newDateLocation = `${datePart} ${mealPart}`;
+            console.log(`📅 自动识别日期: ${newDateLocation}`);
+        
+            // 3. 立即更新到后台配置输入框 (用户可见)
+            const dateInput = document.getElementById('config-date');
+            const autoCheck = document.getElementById('config-auto-date');
+            
+            if (dateInput && autoCheck) {
+                dateInput.value = newDateLocation;
+                autoCheck.checked = false; // 重要：关闭自动生成，强制使用我们识别的日期
+                // 在预览区上方显示提示
+                showToast(`已自动将日期更新为: ${newDateLocation}`);
+            }
+            // ===================================
+        
+            
+            // --- 原有的菜品解析逻辑 ---
+            
             // 1. 预扫描：提取厨师信息
             let mainChefs = []; // 存储所有主厨名字
             let noodleChef = '';       
             let grillChef = '';        
-            const allChefNames = new Set(); // 所有人名黑名单（防止把人名当菜）
+            const allChefNames = new Set(); // 所有人名黑名单
         
             lines.forEach(line => {
                 const clean = line.replace(/[:：]/g, ':').trim();
@@ -1020,9 +1059,9 @@
                     }
                 }
                 
-                // B. 提取副厨 (只加入黑名单，不作为菜品厨师)
+                // B. 提取副厨 (只加入黑名单)
                 if (clean.includes('副厨')) {
-                    const content = clean.split(':')[1] || clean; // 兼容没有冒号的情况
+                    const content = clean.split(':')[1] || clean;
                     const names = content.trim().split(/\s+/);
                     names.forEach(name => {
                         if (isValidName(name)) allChefNames.add(name);
@@ -1046,20 +1085,14 @@
                 }
             });
         
-            // 生成主厨字符串 (例如 "彭刘锋 兰达武")
             const mainChefsString = mainChefs.length > 0 ? mainChefs.join(' ') : '当日厨师';
-            
-            // 回退机制
             if (!noodleChef) noodleChef = mainChefs[0] || '面档师傅';
             if (!grillChef) grillChef = mainChefsString;
-        
-            console.log(`识别结果 -> 主厨:[${mainChefsString}], 面档:[${noodleChef}]`);
         
             // 2. 逐行解析菜品
             let currentCategory = 'unknown'; 
             let currentChef = mainChefsString;
             
-            // 白名单分类 -> 对应厨师
             const validCategories = {
                 '荤菜': mainChefsString,
                 '素菜': mainChefsString,
@@ -1070,9 +1103,7 @@
                 '面档': noodleChef
             };
         
-            // 黑名单分类 (遇到即跳过)
             const ignoreCategories = ['鲜榨果汁', '果汁', '主食', '温馨提示', '充值'];
-            // 停止词
             const stopKeywords = ['祝大家用餐愉快', '欢迎大家', '温馨提示'];
         
             let stopParsing = false;
@@ -1082,19 +1113,16 @@
                 let cleanLine = line.trim();
                 if (!cleanLine) return;
         
-                // 页脚停止检测
                 if (stopKeywords.some(kw => cleanLine.includes(kw))) {
                     stopParsing = true;
                     return;
                 }
         
-                // 检查分类标题
                 let headerText = cleanLine.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '')
                                           .replace(/[🍽🥙🍠🥣🍜]/g, '')
                                           .replace(/[:：]/g, '')
                                           .trim();
                 
-                // 检查黑名单分类
                 for (const badCat of ignoreCategories) {
                     if (headerText.startsWith(badCat)) {
                         currentCategory = 'ignore';
@@ -1102,12 +1130,10 @@
                     }
                 }
         
-                // 检查有效分类
                 for (const cat in validCategories) {
                     if (headerText.startsWith(cat)) {
                         currentCategory = 'active';
                         currentChef = validCategories[cat];
-                        // 如果标题行包含菜品 (如 "明档: 羊肉串")
                         if (cleanLine.includes(':') || cleanLine.includes('：')) {
                             const parts = cleanLine.split(/[:：]/);
                             if (parts[1]) cleanLine = parts[1];
@@ -1121,25 +1147,20 @@
         
                 if (currentCategory === 'unknown' || currentCategory === 'ignore') return;
         
-                // 清洗文本
                 cleanLine = cleanLine.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '')
                                      .replace(/[\[\]🐮🐟🐔🥩🥒🍆🥬🍍🥑🧋]/g, '')
                                      .replace(/^[:：]/, '')
                                      .trim();
         
                 if (cleanLine.includes('太阳') || cleanLine.length < 2) return;
-                
-                // 过滤单纯的人名行 (例如单独一行的 "杜军")
                 if (allChefNames.has(cleanLine)) return;
         
-                // 分割并添加
                 const items = cleanLine.split(/\s+/);
                 items.forEach(item => {
                     if (item.length > 1 && 
                         !/\d/.test(item) && 
                         !item.includes('微信') && 
-                        !allChefNames.has(item)) { // 再次检查每个词
-                        
+                        !allChefNames.has(item)) { 
                         parsedDishes.push({ name: item, chef: currentChef });
                     }
                 });
@@ -1148,7 +1169,6 @@
             renderPreview();
         }
         
-        // 辅助函数：判断是否是有效人名
         function isValidName(name) {
             return name && name.length > 1 && name.length < 5 && !/[\d\w]/.test(name);
         }
@@ -1165,10 +1185,9 @@
             }
         
             parsedDishes.forEach((dish, index) => {
-                // 简单样式区分
                 let chefStyle = '';
-                if (dish.chef.includes(' ')) chefStyle = 'color:#0f6b48; font-weight:bold;'; // 多位主厨绿色
-                else if (!dish.chef.includes(parsedDishes[0].chef)) chefStyle = 'color:#e65100; font-weight:bold;'; // 面档橙色
+                if (dish.chef.includes(' ')) chefStyle = 'color:#0f6b48; font-weight:bold;';
+                else if (!dish.chef.includes(parsedDishes[0].chef)) chefStyle = 'color:#e65100; font-weight:bold;';
         
                 tbody.innerHTML += `
                     <tr style="border-bottom:1px solid #eee;">
@@ -1195,32 +1214,33 @@
         async function executeImport() {
             if (parsedDishes.length === 0) return;
             
-            if (!confirm(`⚠️ 高能预警：\n\n即将清空【所有旧菜品】并导入 ${parsedDishes.length} 道新菜品。\n\n确定要执行吗？`)) return;
+            if (!confirm(`⚠️ 高能预警：\n\n即将清空【所有旧菜品】并导入 ${parsedDishes.length} 道新菜品。\n同时更新日期设置。\n\n确定要执行吗？`)) return;
             
-            // 1. 获取现有所有菜品ID
+            // 1. 保存新的日期配置 (非常重要)
+            // 此时 input 里的值已经是我们自动识别并填充好的了，直接调用保存即可
+            try {
+                await saveConfig(); // 调用原有的配置保存函数
+                console.log('配置已更新');
+            } catch (e) {
+                console.error('配置保存失败', e);
+            }
+        
+            // 2. 清空旧菜品
             let existingIds = [];
             try {
                 const res = await fetch('/api/admin/dishes', { headers: getHeaders() });
                 const data = await res.json();
                 existingIds = data.dishes.map(d => d.id);
-            } catch (e) {
-                console.error(e);
-                showToast('获取旧数据失败，操作取消', 'error');
-                return;
-            }
+            } catch (e) { return; }
         
-            // 2. 逐个删除旧菜品 (模拟清空)
-            let deleteCount = 0;
             for (const id of existingIds) {
                 try {
                     await fetch(`/api/admin/dishes/${id}`, {
                         method: 'DELETE',
                         headers: getHeaders()
                     });
-                    deleteCount++;
-                } catch (e) { console.error(`删除失败 ID:${id}`, e); }
+                } catch (e) {}
             }
-            console.log(`已清空 ${deleteCount} 条旧数据`);
         
             // 3. 导入新菜品
             let count = 0;
@@ -1237,12 +1257,13 @@
                         })
                     });
                     count++;
-                } catch (e) { console.error(e); }
+                } catch (e) {}
             }
             
-            showToast(`♻️ 已清空旧菜单，并成功导入 ${count} 道新菜品`, 'success');
+            showToast(`♻️ 菜单更新完成！已导入 ${count} 道菜`, 'success');
             document.getElementById('smart-import-modal').style.display = 'none';
-            loadDishes(); // 刷新表格
+            loadDishes(); 
+            loadConfig(); // 刷新配置显示以确认
         }
         // --- 智能导入功能 (增强版) ---END
         
