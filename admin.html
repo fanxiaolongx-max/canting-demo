@@ -429,6 +429,7 @@
                 <div class="bulk-actions">
                     <button class="btn btn-success" onclick="addDish()">➕ 新增菜品</button>
                     <button class="btn btn-secondary" onclick="importDishes()">📤 批量导入</button>
+                    <button class="btn" style="background:#17a2b8; color:white;" onclick="openSmartImport()">📋 智能导入菜单</button>
                     <button class="btn btn-secondary" onclick="exportDishes()">📥 导出表格</button>
                 </div>
             </div>
@@ -487,6 +488,41 @@
     </div>
 
     <div class="toast" id="toast"></div>
+        <div id="smart-import-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000; align-items:center; justify-content:center;">
+        <div style="background:white; width:90%; max-width:800px; max-height:90vh; border-radius:8px; display:flex; flex-direction:column; overflow:hidden;">
+            <div style="padding:15px 20px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
+                <h3 style="margin:0;">📋 智能菜单识别</h3>
+                <span onclick="document.getElementById('smart-import-modal').style.display='none'" style="cursor:pointer; font-size:24px;">&times;</span>
+            </div>
+            <div style="padding:20px; overflow-y:auto; flex:1;">
+                <div style="background:#fff3cd; color:#856404; padding:10px; border-radius:4px; margin-bottom:15px; font-size:13px;">
+                    💡 提示：直接粘贴微信群里的菜单通知，系统会自动识别菜品和对应厨师。
+                </div>
+                <textarea id="import-text" style="width:100%; height:150px; padding:10px; border:1px solid #ddd; border-radius:4px; margin-bottom:15px;" placeholder="请粘贴菜单文本..."></textarea>
+                <button class="btn btn-primary" onclick="parseMenuText()" style="width:100%;">🔍 开始解析</button>
+                
+                <div id="import-preview" style="display:none; margin-top:20px; border-top:1px solid #eee; padding-top:20px;">
+                    <div style="margin-bottom:10px; font-weight:bold; color:#0f6b48;">预览导入结果 (<span id="preview-count">0</span> 道菜)</div>
+                    <div style="max-height:300px; overflow-y:auto; border:1px solid #eee; border-radius:4px;">
+                        <table style="width:100%; border-collapse:collapse;">
+                            <thead style="background:#f8f9fa; position:sticky; top:0;">
+                                <tr>
+                                    <th style="padding:8px; text-align:left;">菜品名称</th>
+                                    <th style="padding:8px; text-align:left;">归属厨师</th>
+                                    <th style="padding:8px; text-align:center; width:60px;">状态</th>
+                                </tr>
+                            </thead>
+                            <tbody id="preview-tbody"></tbody>
+                        </table>
+                    </div>
+                    <div style="margin-top:15px; text-align:right;">
+                        <button class="btn btn-secondary" onclick="document.getElementById('smart-import-modal').style.display='none'">取消</button>
+                        <button class="btn btn-success" onclick="executeImport()">✅ 确认并导入</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- 隐藏的文件上传输入 -->
     <input type="file" id="file-input-dishes" class="file-input" accept=".json,.csv" onchange="handleDishesImport(event)">
@@ -945,6 +981,138 @@
         }
 
         // 初始化
+        // --- 智能导入功能 ---
+        function openSmartImport() {
+            document.getElementById('smart-import-modal').style.display = 'flex';
+            document.getElementById('import-text').value = '';
+            document.getElementById('import-preview').style.display = 'none';
+        }
+        
+        let parsedDishes = [];
+        
+        function parseMenuText() {
+            const text = document.getElementById('import-text').value;
+            if (!text.trim()) { showToast('请先粘贴文本', 'error'); return; }
+        
+            const lines = text.split('\n');
+            parsedDishes = [];
+            
+            // 1. 识别厨师映射 (例如 "面档: 程辉")
+            let roleMap = {};
+            lines.forEach(line => {
+                if (line.includes(':') || line.includes('：')) {
+                    const parts = line.split(/[:：]/);
+                    const key = parts[0].trim();
+                    const val = parts[1].trim();
+                    // 提取人名（简单的假设：名字一般2-3个字）
+                    const names = val.split(/\s+/).filter(n => n.length > 1 && n.length < 5);
+                    if (names.length > 0) {
+                        if (key.includes('面档')) roleMap['面'] = names[0];
+                        if (key.includes('明档')) roleMap['铁板'] = names[0];
+                        if (key.includes('主厨')) roleMap['default'] = names[0]; // 默认归主厨
+                    }
+                }
+            });
+        
+            // 2. 识别菜品
+            let currentCategory = '其他';
+            const dishKeywords = ['荤菜', '素菜', '粗粮', '果汁', '主食', '汤类', '面食', '明档'];
+            
+            lines.forEach(line => {
+                let cleanLine = line.trim();
+                if (!cleanLine) return;
+        
+                // 检测分类
+                for (const kw of dishKeywords) {
+                    if (cleanLine.includes(kw)) {
+                        currentCategory = kw;
+                        // 如果这行包含冒号，冒号后面可能是菜品
+                        if (cleanLine.includes(':') || cleanLine.includes('：')) {
+                            cleanLine = cleanLine.split(/[:：]/)[1];
+                        } else {
+                            return; // 只是标题行
+                        }
+                    }
+                }
+        
+                // 清理行内容 (去除emoji、前缀等)
+                // 比如 "🐮:小炒黄牛肉" -> "小炒黄牛肉"
+                cleanLine = cleanLine.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '') // 去除emoji
+                                     .replace(/[^\u4e00-\u9fa5a-zA-Z0-9\s]/g, ' ') // 去除特殊符号
+                                     .trim();
+        
+                if (cleanLine.length < 2) return;
+                if (cleanLine.includes('温馨提示') || cleanLine.includes('充值')) return;
+        
+                // 分割一行中的多个菜品
+                const items = cleanLine.split(/\s+/);
+                items.forEach(item => {
+                    if (item.length > 1) {
+                        // 智能匹配厨师
+                        let chef = roleMap['default'] || '待定';
+                        if (currentCategory.includes('面') || item.includes('面') || item.includes('粉')) chef = roleMap['面'] || chef;
+                        if (currentCategory.includes('明档') || item.includes('串') || item.includes('烤')) chef = roleMap['铁板'] || chef;
+        
+                        parsedDishes.push({ name: item, chef: chef });
+                    }
+                });
+            });
+        
+            renderPreview();
+        }
+        
+        function renderPreview() {
+            const tbody = document.getElementById('preview-tbody');
+            tbody.innerHTML = '';
+            document.getElementById('preview-count').textContent = parsedDishes.length;
+            
+            parsedDishes.forEach((dish, index) => {
+                tbody.innerHTML += `
+                    <tr style="border-bottom:1px solid #eee;">
+                        <td style="padding:8px;">
+                            <input type="text" value="${dish.name}" class="table-input" onchange="parsedDishes[${index}].name = this.value">
+                        </td>
+                        <td style="padding:8px;">
+                            <input type="text" value="${dish.chef}" class="table-input" onchange="parsedDishes[${index}].chef = this.value">
+                        </td>
+                        <td style="padding:8px; text-align:center;">
+                            <button class="btn btn-danger" style="padding:2px 6px; font-size:12px;" onclick="removeParsedDish(${index})">×</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            document.getElementById('import-preview').style.display = 'block';
+        }
+        
+        function removeParsedDish(index) {
+            parsedDishes.splice(index, 1);
+            renderPreview();
+        }
+        
+        async function executeImport() {
+            if (!confirm(`确认导入 ${parsedDishes.length} 道菜品吗？`)) return;
+            
+            let count = 0;
+            for (const dish of parsedDishes) {
+                try {
+                    await fetch('/api/admin/dishes', {
+                        method: 'POST',
+                        headers: getHeaders(),
+                        body: JSON.stringify({
+                            name: dish.name,
+                            chef: dish.chef,
+                            up_votes: 0,
+                            down_votes: 0
+                        })
+                    });
+                    count++;
+                } catch (e) { console.error(e); }
+            }
+            
+            showToast(`成功导入 ${count} 道菜品`, 'success');
+            document.getElementById('smart-import-modal').style.display = 'none';
+            loadDishes(); // 刷新列表
+        }
         init();
     </script>
 </body>
