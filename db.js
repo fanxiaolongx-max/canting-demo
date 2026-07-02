@@ -118,6 +118,19 @@ function initDatabase() {
         `).run();
     }
 
+    // 检查 config 表的 refresh_interval 字段
+    try {
+        const configTableInfo = db.prepare("PRAGMA table_info(config)").all();
+        const configHasRefreshInterval = configTableInfo.some(col => col.name === 'refresh_interval');
+        if (!configHasRefreshInterval) {
+            console.log('🔄 检测到旧表结构，添加 config.refresh_interval 字段...');
+            db.prepare('ALTER TABLE config ADD COLUMN refresh_interval INTEGER DEFAULT 5').run();
+            console.log('✅ config.refresh_interval 字段已添加');
+        }
+    } catch (e) {
+        console.error('检查 config 字段失败:', e);
+    }
+
     console.log('✅ 数据库初始化完成');
 }
 
@@ -144,6 +157,15 @@ function updateConfig(data) {
         WHERE id = 1
     `);
     return stmt.run(data.title, data.date_location, data.auto_date ? 1 : 0);
+}
+
+function updateRefreshInterval(interval) {
+    const stmt = db.prepare(`
+        UPDATE config 
+        SET refresh_interval = ?, updated_at = strftime('%s', 'now')
+        WHERE id = 1
+    `);
+    return stmt.run(interval);
 }
 
 // ===== 菜品相关 =====
@@ -442,6 +464,7 @@ module.exports = {
     // 配置
     getConfig,
     updateConfig,
+    updateRefreshInterval,
     
     // 菜品
     getAllDishes,

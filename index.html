@@ -126,6 +126,58 @@
         .dish-info-top1 span { color: #d97706; font-size: 18px; font-weight: 600; margin-left: 12px; }
         .vote-stats-top1 { display: flex; gap: 24px; font-size: 24px; font-weight: 800; z-index: 1; }
 
+        /* 亚军菜品特制卡片 (Top 2) */
+        .dish-item-top2 {
+            display: flex;
+            align-items: center;
+            padding: 20px 26px;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #ffffff, #f8fafc);
+            border-radius: 14px;
+            border: 2px solid #cbd5e1;
+            box-shadow: 0 6px 16px rgba(148, 163, 184, 0.15);
+        }
+        .rank-badge-top2 {
+            width: 42px; height: 42px;
+            background: linear-gradient(135deg, #e2e8f0, #94a3b8);
+            color: #fff;
+            text-align: center; line-height: 42px;
+            font-size: 20px; font-weight: 900;
+            margin-right: 18px; border-radius: 50%;
+            flex-shrink: 0;
+            box-shadow: 0 3px 8px rgba(148, 163, 184, 0.4);
+            border: 2px solid #fff;
+        }
+        .dish-info-top2 { flex: 1; font-size: 24px; font-weight: 800; color: #334155; }
+        .dish-info-top2 span { color: #64748b; font-size: 16px; font-weight: 600; margin-left: 10px; }
+        .vote-stats-top2 { display: flex; gap: 20px; font-size: 20px; font-weight: 800; }
+
+        /* 季军菜品特制卡片 (Top 3) */
+        .dish-item-top3 {
+            display: flex;
+            align-items: center;
+            padding: 18px 22px;
+            margin-bottom: 14px;
+            background: linear-gradient(135deg, #ffffff, #fff7ed);
+            border-radius: 12px;
+            border: 1px solid #fdba74;
+            box-shadow: 0 4px 12px rgba(251, 146, 60, 0.12);
+        }
+        .rank-badge-top3 {
+            width: 40px; height: 40px;
+            background: linear-gradient(135deg, #fdba74, #ea580c);
+            color: #fff;
+            text-align: center; line-height: 40px;
+            font-size: 18px; font-weight: 900;
+            margin-right: 16px; border-radius: 50%;
+            flex-shrink: 0;
+            box-shadow: 0 3px 8px rgba(234, 88, 12, 0.4);
+            border: 2px solid #fff;
+        }
+        .dish-info-top3 { flex: 1; font-size: 22px; font-weight: 800; color: #9a3412; }
+        .dish-info-top3 span { color: #c2410c; font-size: 15px; font-weight: 600; margin-left: 8px; }
+        .vote-stats-top3 { display: flex; gap: 18px; font-size: 18px; font-weight: 800; }
+
         /* --- 中间：菜品榜 --- */
         .column-middle { flex: 0 0 38%; display: flex; flex-direction: column; position: relative; height: 100%; }
         .chef-list-wrapper { 
@@ -319,6 +371,16 @@
             color: #718096;
             text-align: center;
         }
+
+        /* 排名趋势指示器 */
+        .trend-icon { font-size: 16px; margin-left: 8px; font-weight: bold; display: inline-block; }
+        .trend-up { color: #10b981; animation: bounceUp 1s ease-in-out infinite alternate; }
+        .trend-down { color: #ef4444; animation: bounceDown 1s ease-in-out infinite alternate; }
+        @keyframes bounceUp { from { transform: translateY(0); } to { transform: translateY(-4px); } }
+        @keyframes bounceDown { from { transform: translateY(0); } to { transform: translateY(4px); } }
+
+        #refresh-timer { cursor: pointer; transition: color 0.2s; }
+        #refresh-timer:hover { color: #a7f3d0; text-decoration: underline; }
 
         /* 3. Logo 区域：绝对定位在右下角 */
         .huawei-logo {
@@ -645,321 +707,6 @@
         </div>
     </div>
 
-    <script>
-        let currentData = null; // 保存当前数据用于错误回滚
-        
-        // 分页配置与状态
-        const paginationState = {
-            dishes: {
-                containerId: 'dish-container',
-                pageSize: 8,
-                currentPage: 0,
-                renderFunc: renderDishesPage
-            },
-            chefDaily: {
-                containerId: 'chef-daily-container',
-                pageSize: 8,
-                currentPage: 0,
-                renderFunc: renderChefDailyPage
-            },
-            chefMonthly: {
-                containerId: 'chef-monthly-container',
-                pageSize: 3,
-                currentPage: 0,
-                renderFunc: renderChefMonthlyPage
-            }
-        };
-
-        let pageInterval = null;
-
-        function renderPage(data) {
-            currentData = data; // 更新全局引用
-            const config = data.config || {};
-            const dishes = data.dishes || [];
-            const chefs = data.chefs || [];
-
-            // 1. 配置基础信息
-            document.getElementById('page-title').innerText = config.title || "餐厅看板";
-            document.getElementById('date-location').innerText = `📍 ${config.date || ''}`;
-
-            // 处理 Logo 图片 (即使没数据也显示个默认占位，防止彻底消失)
-            const logoImg = document.getElementById('footer-logo');
-            logoImg.src = config.logo_url || 'static/logo.png';
-            logoImg.onerror = function() { this.style.display = 'none'; }; // 图片坏了就隐藏
-
-            // 重置/校验当前页码（如果数据变动导致总页数变少，重置为 0）
-            Object.keys(paginationState).forEach(key => {
-                const state = paginationState[key];
-                const dataArray = getPaginationData(key);
-                const totalPages = Math.ceil(dataArray.length / state.pageSize);
-                if (state.currentPage >= totalPages) {
-                    state.currentPage = 0;
-                }
-                // 渲染当前页
-                state.renderFunc(dataArray, state.currentPage);
-            });
-
-            // 2. 渲染主厨个人卡片 (始终基于日榜第一名，即使日榜在第二页，也显示第一名)
-            const sortedChefs = [...chefs].sort((a,b) => a.daily_rank - b.daily_rank);
-            const topChef = sortedChefs.length > 0 ? sortedChefs[0] : null;
-            const card = document.getElementById('profile-card');
-
-            if (topChef) {
-                card.style.display = "block"; // 显示卡片
-                card.innerHTML = `
-                    <div class="profile-header">
-                        <img src="${topChef.photo}" class="chef-photo" onerror="this.src='static/logo.png'">
-                        <div class="chef-details">
-                            <h4>${topChef.name} <span>${topChef.role}</span></h4>
-                            <p>${topChef.desc}</p>
-                            <div style="margin-top: 5px; font-size: 10px; color: #718096; font-weight: 500;">
-                                🏆 日榜第${topChef.daily_rank} | 📊 月榜第${topChef.monthly_rank} | 🎫 ${topChef.monthly_votes}票
-                            </div>
-                        </div>
-                    </div>
-                    <div class="qr-section">
-                        <div class="qr-box">
-                            <img id="qr-vote" src="" class="qr-img">
-                            <div class="qr-label">📱 扫码投票</div>
-                            <div class="qr-desc">为喜欢的菜品点赞</div>
-                        </div>
-                        <div class="qr-box">
-                            <img id="qr-forum" src="" class="qr-img">
-                            <div class="qr-label">💬 心声墙</div>
-                            <div class="qr-desc">匿名分享你的想法</div>
-                        </div>
-                    </div>
-                `;
-                
-                // 加载真实二维码
-                loadQRCode('vote');
-                loadQRCode('forum');
-            } else {
-                card.style.display = "none";
-            }
-            
-            // 启动定时翻页
-            startPageRotation();
-        }
-
-        // 渲染单页菜品
-        function renderDishesPage(dishes, pageIndex) {
-            const pageSize = paginationState.dishes.pageSize;
-            const start = pageIndex * pageSize;
-            const pageDishes = dishes.slice(start, start + pageSize);
-            
-            const dishHtml = pageDishes.map((dish, index) => {
-                const rank = start + index + 1;
-                
-                if (rank === 1) {
-                    return `
-                        <div class="dish-item-top1" data-dish-id="${dish.id}">
-                            <div class="rank-badge-top1">1</div>
-                            <div style="flex: 1; display: flex; flex-direction: column; z-index: 1;">
-                                <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <div class="dish-info-top1">👑 ${dish.name} <span>${dish.chef}</span></div>
-                                    <div class="vote-stats-top1">
-                                        <span style="color: #059669;">👍 ${dish.up}</span>
-                                        <span style="color: #dc2626; margin-left: 12px;">👎 ${dish.down}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }
-
-                return `
-                    <div class="dish-item" data-dish-id="${dish.id}">
-                        <div class="rank-badge ${rank === 2 ? 'top-2' : rank === 3 ? 'top-3' : ''}">${rank}</div>
-                        <div style="flex: 1; display: flex; flex-direction: column;">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <div class="dish-info">${dish.name} - <span>${dish.chef}</span></div>
-                                <div class="vote-stats">
-                                    <span style="color: #10b981;">👍 ${dish.up}</span>
-                                    <span style="color: #ef4444; margin-left: 8px;">👎 ${dish.down}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-            document.getElementById('dish-container').innerHTML = dishHtml;
-        }
-
-        // 渲染单页日榜厨师
-        function renderChefDailyPage(chefs, pageIndex) {
-            const pageSize = paginationState.chefDaily.pageSize;
-            const start = pageIndex * pageSize;
-            const pageChefs = chefs.slice(start, start + pageSize);
-            
-            document.getElementById('chef-daily-container').innerHTML = pageChefs.map(chef => {
-                const rank = chef.daily_rank;
-                return `
-                    <div class="chef-list-item">
-                        <div class="rank-badge ${rank === 1 ? 'top-1' : rank === 2 ? 'top-2' : rank === 3 ? 'top-3' : ''}">${rank}</div>
-                        <img src="${chef.photo}" class="chef-photo" onerror="this.src='static/logo.png'">
-                        <div class="chef-details">
-                            <h4>${chef.name}</h4>
-                            <p>${chef.desc}</p>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // 渲染单页月榜厨师
-        function renderChefMonthlyPage(chefs, pageIndex) {
-            const pageSize = paginationState.chefMonthly.pageSize;
-            const start = pageIndex * pageSize;
-            const pageChefs = chefs.slice(start, start + pageSize);
-            const medals = ['🥇', '🥈', '🥉']; // 金银铜牌
-            
-            document.getElementById('chef-monthly-container').innerHTML = pageChefs.map(chef => {
-                const medal = medals[chef.monthly_rank - 1] || chef.monthly_rank;
-                return `
-                    <div class="month-rank-item">
-                        <div class="medal">${medal}</div>
-                        <img src="${chef.photo}" class="chef-mini-photo" onerror="this.src='static/logo.png'">
-                        <div class="month-details">
-                            <strong>${chef.name}</strong>
-                            <span>本月得票: ${chef.monthly_votes}</span>
-                        </div>
-                        <div class="month-score">月度第${chef.monthly_rank}名</div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // 启动定时翻页旋转
-        function startPageRotation() {
-            if (pageInterval) {
-                clearInterval(pageInterval);
-            }
-            
-            pageInterval = setInterval(() => {
-                Object.keys(paginationState).forEach(key => {
-                    const state = paginationState[key];
-                    const dataArray = getPaginationData(key);
-                    if (!dataArray || dataArray.length <= state.pageSize) {
-                        return; // 数据未超过单页容量，不翻页
-                    }
-                    
-                    const totalPages = Math.ceil(dataArray.length / state.pageSize);
-                    const container = document.getElementById(state.containerId);
-                    if (!container) return;
-                    
-                    // 1. 渐隐
-                    container.classList.add('fade-out');
-                    
-                    // 2. 等待渐隐动画，渲染下一页并渐显
-                    setTimeout(() => {
-                        state.currentPage = (state.currentPage + 1) % totalPages;
-                        state.renderFunc(dataArray, state.currentPage);
-                        container.classList.remove('fade-out');
-                    }, 400);
-                });
-            }, 8000); // 每 8 秒翻页一次
-        }
-
-        // 获取特定类型的数据源
-        function getPaginationData(key) {
-            if (!currentData) return [];
-            if (key === 'dishes') {
-                return currentData.dishes || [];
-            }
-            if (key === 'chefDaily') {
-                const chefs = currentData.chefs || [];
-                return [...chefs].sort((a,b) => a.daily_rank - b.daily_rank);
-            }
-            if (key === 'chefMonthly') {
-                const chefs = currentData.chefs || [];
-                return [...chefs].sort((a,b) => a.monthly_rank - b.monthly_rank).slice(0, 3);
-            }
-            return [];
-        }
-
-        // 加载二维码
-        function loadQRCode(type) {
-            fetch(`/api/qrcode/${type}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        const img = document.getElementById(`qr-${type}`);
-                        if (img) {
-                            img.src = data.qrcode;
-                        }
-                    }
-                })
-                .catch(err => console.error('加载二维码失败:', err));
-        }
-
-        // 加载数据函数
-        function loadData() {
-            fetch('/api/data')
-                .then(res => res.json())
-                .then(data => {
-                    currentData = data;
-                    renderPage(data);
-                    console.log('✅ 数据已刷新:', new Date().toLocaleTimeString());
-                })
-                .catch(err => {
-                    console.error("数据加载失败:", err);
-                    document.getElementById('page-title').innerText = "无法连接数据服务";
-                });
-        }
-
-        // 自动刷新：每5分钟刷新一次数据
-        let autoRefreshInterval = null;
-        let countdownInterval = null;
-        const REFRESH_INTERVAL = 5 * 60 * 1000; // 5分钟 = 300000毫秒
-        
-        function updateRefreshTimer(seconds) {
-            const timerEl = document.getElementById('refresh-timer');
-            if (timerEl) {
-                const minutes = Math.floor(seconds / 60);
-                const secs = seconds % 60;
-                timerEl.textContent = `自动刷新: ${minutes}:${String(secs).padStart(2, '0')}`;
-            }
-        }
-        
-        function startAutoRefresh() {
-            if (autoRefreshInterval) {
-                clearInterval(autoRefreshInterval);
-            }
-            if (countdownInterval) {
-                clearInterval(countdownInterval);
-            }
-            
-            autoRefreshInterval = setInterval(() => {
-                console.log('🔄 自动刷新数据...');
-                loadData();
-                startCountdown();
-            }, REFRESH_INTERVAL);
-            
-            startCountdown();
-            console.log('✅ 自动刷新已启动（每5分钟）');
-        }
-        
-        function startCountdown() {
-            let remaining = REFRESH_INTERVAL / 1000; // 转换为秒
-            updateRefreshTimer(remaining);
-            
-            if (countdownInterval) {
-                clearInterval(countdownInterval);
-            }
-            
-            countdownInterval = setInterval(() => {
-                remaining--;
-                if (remaining <= 0) {
-                    remaining = REFRESH_INTERVAL / 1000;
-                }
-                updateRefreshTimer(remaining);
-            }, 1000);
-        }
-
-        // 页面启动时加载数据并启动自动刷新
-        loadData();
-        startAutoRefresh();
-    </script>
+    <script src="static/js/dashboard.js?v=2.0.0"></script>
 </body>
 </html>

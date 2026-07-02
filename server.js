@@ -34,8 +34,16 @@ if (!fs.existsSync(BACKUP_DIR)) {
 }
 
 // 托管静态文件：
-// 1. 托管代码里的静态文件 (如 css, js, 默认 logo)
-app.use(express.static(__dirname));
+// 1. 托管代码里的静态文件 (如 css, js, 默认 logo)，并对 HTML 禁用缓存
+app.use(express.static(__dirname, {
+    setHeaders: (res, path) => {
+        if (path.endsWith('.html')) {
+            res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+            res.setHeader('Pragma', 'no-cache');
+            res.setHeader('Expires', '0');
+        }
+    }
+}));
 // 2. 托管上传的图片 (映射 /static 路径到持久化目录)
 app.use('/static', express.static(STATIC_DIR));
 
@@ -99,8 +107,9 @@ app.get('/api/data', (req, res) => {
             config: {
                 title: config.title,
                 date: config.date_location,
-                logo_url: 'static/logo.png',  // 固定使用logo
-                qr_url: 'static/logo.png'  // 不再使用
+                logo_url: 'static/logo.png?v=20260702',  // 固定使用logo
+                qr_url: 'static/logo.png?v=20260702',    // 不再使用
+                refresh_interval: config.refresh_interval
             },
             dishes: dishes.map(d => ({
                 id: d.id,
@@ -418,6 +427,20 @@ app.post('/api/admin/config', checkAdminAuth, (req, res) => {
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: '更新配置失败' });
+    }
+});
+
+// 5.1 公开 API：更新刷新频率 (看板前端调用)
+app.post('/api/config/interval', (req, res) => {
+    try {
+        const interval = parseInt(req.body.interval, 10);
+        if (isNaN(interval) || interval < 1) {
+            return res.status(400).json({ error: '无效的时间间隔' });
+        }
+        db.updateRefreshInterval(interval);
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: '更新刷新间隔失败' });
     }
 });
 
