@@ -594,6 +594,10 @@
                 <div style="background:#fff3cd; color:#856404; padding:10px; border-radius:4px; margin-bottom:15px; font-size:13px;">
                     💡 提示：直接粘贴微信群里的菜单通知，系统会自动识别菜品和对应厨师。
                 </div>
+                <div style="margin-bottom: 10px; font-size: 13px;">
+                    <strong>🚫 忽略关键词（逗号分隔）:</strong>
+                    <input type="text" id="config-ignore-keywords" value="鲜榨果汁,果汁,主食,温馨提示,充值,小菜" style="width:100%; padding:8px; margin-top:5px; border:1px solid #ddd; border-radius:4px;">
+                </div>
                 <textarea id="import-text" style="width:100%; height:150px; padding:10px; border:1px solid #ddd; border-radius:4px; margin-bottom:15px;" placeholder="请粘贴菜单文本..."></textarea>
                 <button class="btn btn-primary" onclick="parseMenuText()" style="width:100%;">🔍 开始解析</button>
                 
@@ -610,6 +614,10 @@
                             </thead>
                             <tbody id="preview-tbody"></tbody>
                         </table>
+                    </div>
+                    <div id="ignored-items-container" style="display:none; margin-top:10px; font-size:12px; color:#856404; background:#fff3cd; padding:8px; border-radius:4px;">
+                        <strong>🚫 已忽略以下内容:</strong>
+                        <div id="ignored-items-list" style="margin-top:4px; max-height:80px; overflow-y:auto;"></div>
                     </div>
                     <div style="margin-top:15px; text-align:right;">
                         <button class="btn btn-secondary" onclick="document.getElementById('smart-import-modal').style.display='none'">取消</button>
@@ -1086,6 +1094,7 @@
         }
         
         let parsedDishes = [];
+        let parsedIgnoredItems = [];
         
         // 核心入口函数
         function parseMenuText() {
@@ -1094,6 +1103,7 @@
         
             const lines = text.split('\n').map(l => l.trim()).filter(l => l);
             parsedDishes = [];
+            parsedIgnoredItems = [];
         
             // --- 1. 识别餐段与日期 ---
             const now = new Date();
@@ -1258,7 +1268,8 @@
                 '面档': noodleChef
             };
         
-            const ignoreCategories = ['鲜榨果汁', '果汁', '主食', '温馨提示', '充值', '小菜'];
+            const ignoreKeywordsInput = document.getElementById('config-ignore-keywords');
+            const ignoreCategories = ignoreKeywordsInput ? ignoreKeywordsInput.value.split(',').map(s => s.trim()).filter(s => s) : ['鲜榨果汁', '果汁', '主食', '温馨提示', '充值', '小菜'];
             const stopKeywords = ['祝大家用餐愉快', '欢迎大家', '温馨提示'];
         
             let stopParsing = false;
@@ -1281,23 +1292,38 @@
                                           .replace(/\s+/g, '') // 移除所有空格
                                           .trim();
                 
-                // 检查忽略
+                // 检查忽略分类
+                let matchedIgnoreCat = false;
                 for (const badCat of ignoreCategories) {
-                    if (headerText.startsWith(badCat)) { currentCategory = 'ignore'; return; }
+                    if (headerText.startsWith(badCat) || cleanLine.includes(badCat)) {
+                        matchedIgnoreCat = true;
+                        parsedIgnoredItems.push(cleanLine || line.trim());
+                        
+                        // 如果明确是分类头（完全匹配，或者带有冒号），则把状态切换为 ignore
+                        if (headerText === badCat || cleanLine.includes(':') || cleanLine.includes('：')) {
+                            currentCategory = 'ignore';
+                        }
+                        break;
+                    }
                 }
-        
+                if (matchedIgnoreCat) return;
+
                 // 检查有效分类
+                let matchedValidCat = false;
                 for (const cat in validCategories) {
-                    if (headerText.startsWith(cat)) {
+                    if (headerText === cat || (headerText.startsWith(cat) && (cleanLine.includes(':') || cleanLine.includes('：')))) {
                         currentCategory = 'active';
                         currentChef = validCategories[cat];
+                        matchedValidCat = true;
                         
-                        // 关键修复 3: 处理同一行的内容，并在分类检测通过后，移除分类前缀
-                        // "明 档: 酸菜牛肉包" -> 识别为 明档 -> 提取 "酸菜牛肉包"
+                        // 处理同一行的内容，并在分类检测通过后，移除分类前缀
                         if (cleanLine.includes(':') || cleanLine.includes('：')) {
                             const parts = cleanLine.split(/[:：]/);
-                            if (parts[1]) cleanLine = parts[1]; // 取冒号后的内容作为菜品
-                            else return;
+                            if (parts[1] && parts[1].trim() !== '') {
+                                cleanLine = parts[1]; // 取冒号后的内容作为菜品
+                            } else {
+                                return; // 冒号后没内容，是纯标题行
+                            }
                         } else {
                             return; // 纯标题行，跳过
                         }
@@ -1305,7 +1331,12 @@
                     }
                 }
         
-                if (currentCategory === 'unknown' || currentCategory === 'ignore') return;
+                if (currentCategory === 'unknown' || currentCategory === 'ignore') {
+                    if (currentCategory === 'ignore') {
+                        parsedIgnoredItems.push(cleanLine || line.trim());
+                    }
+                    return;
+                }
         
                 // 关键修复 2: 清洗内容，移除 [玫瑰] 等
                 cleanLine = cleanLine.replace(/\[.*?\]/g, '') // 移除所有中括号内容
@@ -1337,6 +1368,15 @@
             tbody.innerHTML = '';
             document.getElementById('preview-count').textContent = parsedDishes.length;
             
+            const ignoredContainer = document.getElementById('ignored-items-container');
+            const ignoredList = document.getElementById('ignored-items-list');
+            if (parsedIgnoredItems.length > 0) {
+                ignoredContainer.style.display = 'block';
+                ignoredList.innerHTML = parsedIgnoredItems.map(item => `<div>- ${item}</div>`).join('');
+            } else {
+                ignoredContainer.style.display = 'none';
+            }
+
             if (parsedDishes.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:20px; color:#999;">未识别到有效菜品，请检查文本格式</td></tr>';
                 document.getElementById('import-preview').style.display = 'block';

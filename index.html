@@ -21,34 +21,34 @@
         }
 
         /* 顶部导航 */
-        header { background-color: #0f6b48; color: rgba(255,255,255,0.85); padding: 12px 24px; font-size: 13px; display: flex; gap: 20px; justify-content: space-between; align-items: center; flex-shrink: 0; }
+        header { background-color: #0f6b48; color: rgba(255,255,255,0.85); padding: 12px 24px; font-size: 16px; display: flex; gap: 20px; justify-content: space-between; align-items: center; flex-shrink: 0; }
         .header-left { display: flex; gap: 20px; font-weight: 500; }
-        .header-right { font-family: "KaiTi", "楷体", "STKaiti", "华文楷体", cursive; font-size: 18px; color: rgba(255,255,255,0.95); font-weight: normal; letter-spacing: 2px; }
-        .header-title-area { background-color: #0d5c3e; color: #fff; padding: 14px 30px; font-size: 26px; font-weight: 800; flex-shrink: 0; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .header-right { font-family: "KaiTi", "楷体", "STKaiti", "华文楷体", cursive; font-size: 22px; color: rgba(255,255,255,0.95); font-weight: normal; letter-spacing: 2px; }
+        .header-title-area { background-color: #0d5c3e; color: #fff; padding: 14px 30px; font-size: 36px; font-weight: 800; flex-shrink: 0; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
 
         /* 主内容区布局 */
         .main-content { flex: 1; display: flex; padding: 24px 30px; gap: 30px; position: relative; overflow: hidden; }
         .section-title { 
-            font-size: 18px; 
+            font-size: 24px; 
             font-weight: 700; 
             color: #1a202c; 
-            margin-bottom: 16px; 
+            margin-bottom: 20px; 
             flex-shrink: 0; 
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
         }
         .section-title::before {
             content: '';
             display: inline-block;
-            width: 4px;
-            height: 16px;
+            width: 6px;
+            height: 22px;
             background-color: #0f6b48;
-            border-radius: 2px;
+            border-radius: 3px;
         }
 
-        /* --- 左侧：菜品榜 --- */
-        .column-left { flex: 0 0 38%; display: flex; flex-direction: column; height: 100%; }
+        /* --- 左侧：日榜 --- */
+        .column-left { flex: 0 0 31%; display: flex; flex-direction: column; height: 100%; }
         .dish-list { 
             overflow: hidden; 
             flex: 1; 
@@ -59,52 +59,75 @@
         .dish-item { 
             display: flex; 
             align-items: center; 
-            padding: 10px 14px; 
-            margin-bottom: 8px;
+            padding: 16px 20px; 
+            margin-bottom: 14px;
             background-color: #fff;
-            border-radius: 10px;
+            border-radius: 12px;
             border: 1px solid #eef2f6;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.01);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .dish-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(15, 107, 72, 0.08);
-            border-color: rgba(15, 107, 72, 0.2);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(15, 107, 72, 0.1);
+            border-color: rgba(15, 107, 72, 0.25);
         }
         .rank-badge { 
-            width: 26px; height: 26px; 
+            width: 36px; height: 36px; 
             background-color: #a0aec0; color: #fff; 
-            text-align: center; line-height: 26px; 
-            font-size: 13px; font-weight: 800;
-            margin-right: 12px; border-radius: 50%;
+            text-align: center; line-height: 36px; 
+            font-size: 18px; font-weight: 800;
+            margin-right: 16px; border-radius: 50%;
             flex-shrink: 0;
         }
-        .rank-badge.top-1 { background: linear-gradient(135deg, #fcd34d, #f59e0b); color: #fff; box-shadow: 0 2px 6px rgba(245, 158, 11, 0.3); }
-        .rank-badge.top-2 { background: linear-gradient(135deg, #e2e8f0, #cbd5e1); color: #475569; box-shadow: 0 2px 6px rgba(203, 213, 225, 0.3); }
-        .rank-badge.top-3 { background: linear-gradient(135deg, #fdba74, #ea580c); color: #fff; box-shadow: 0 2px 6px rgba(234, 88, 12, 0.3); }
+        .rank-badge.top-1 { background: linear-gradient(135deg, #fcd34d, #f59e0b); color: #fff; box-shadow: 0 3px 8px rgba(245, 158, 11, 0.4); }
+        .rank-badge.top-2 { background: linear-gradient(135deg, #e2e8f0, #cbd5e1); color: #475569; box-shadow: 0 3px 8px rgba(203, 213, 225, 0.4); }
+        .rank-badge.top-3 { background: linear-gradient(135deg, #fdba74, #ea580c); color: #fff; box-shadow: 0 3px 8px rgba(234, 88, 12, 0.4); }
         
-        .dish-info { flex: 1; font-size: 14px; font-weight: 700; color: #2d3748; }
-        .dish-info span { color: #718096; font-size: 12px; font-weight: normal; margin-left: 6px; }
+        .dish-info { flex: 1; font-size: 20px; font-weight: 700; color: #2d3748; }
+        .dish-info span { color: #718096; font-size: 15px; font-weight: normal; margin-left: 8px; }
 
-        .vote-stats { display: flex; gap: 12px; font-size: 13px; font-weight: 700; }
-        
-        /* 好评度进度条 */
-        .vote-bar-container {
-            width: 100%; height: 5px;
-            background-color: #edf2f7;
-            border-radius: 3px; overflow: hidden;
-            margin-top: 6px;
-        }
-        .vote-bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #10b981, #059669);
-            border-radius: 3px;
-            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+        .vote-stats { display: flex; gap: 16px; font-size: 18px; font-weight: 700; }
 
-        /* --- 中间：日榜 --- */
-        .column-middle { flex: 0 0 31%; display: flex; flex-direction: column; position: relative; height: 100%; }
+        /* 冠军菜品特制卡片 */
+        .dish-item-top1 {
+            display: flex;
+            align-items: center;
+            padding: 24px 30px;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #ffffff, #fffbeb);
+            border-radius: 16px;
+            border: 2px solid #fcd34d;
+            box-shadow: 0 8px 24px rgba(245, 158, 11, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+        .dish-item-top1::before {
+            content: '';
+            position: absolute;
+            top: 0; right: 0;
+            width: 120px; height: 120px;
+            background: linear-gradient(135deg, transparent 50%, rgba(245, 158, 11, 0.1) 50%);
+            border-radius: 0 16px 0 100%;
+        }
+        .rank-badge-top1 {
+            width: 48px; height: 48px;
+            background: linear-gradient(135deg, #fcd34d, #f59e0b);
+            color: #fff;
+            text-align: center; line-height: 48px;
+            font-size: 24px; font-weight: 900;
+            margin-right: 20px; border-radius: 50%;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.5);
+            border: 3px solid #fff;
+            z-index: 1;
+        }
+        .dish-info-top1 { flex: 1; font-size: 28px; font-weight: 800; color: #b45309; }
+        .dish-info-top1 span { color: #d97706; font-size: 18px; font-weight: 600; margin-left: 12px; }
+        .vote-stats-top1 { display: flex; gap: 24px; font-size: 24px; font-weight: 800; z-index: 1; }
+
+        /* --- 中间：菜品榜 --- */
+        .column-middle { flex: 0 0 38%; display: flex; flex-direction: column; position: relative; height: 100%; }
         .chef-list-wrapper { 
             flex: 1; 
             overflow: hidden;
@@ -115,35 +138,35 @@
         .chef-list-item { 
             display: flex; 
             align-items: center;
-            padding: 10px 14px;
-            margin-bottom: 8px;
+            padding: 16px 20px;
+            margin-bottom: 14px;
             background-color: #fff;
-            border-radius: 10px;
+            border-radius: 12px;
             border: 1px solid #eef2f6;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.01);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .chef-list-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(15, 107, 72, 0.08);
-            border-color: rgba(15, 107, 72, 0.2);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(15, 107, 72, 0.1);
+            border-color: rgba(15, 107, 72, 0.25);
         }
         
         .chef-photo { 
-            width: 44px; height: 44px; 
+            width: 64px; height: 64px; 
             background-color: #edf2f7; 
-            margin-right: 12px; 
+            margin-right: 16px; 
             object-fit: cover; 
             border-radius: 50%;
             border: 2px solid #fff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
             flex-shrink: 0;
         }
         .chef-details { flex: 1; min-width: 0; }
-        .chef-details h4 { font-size: 14px; font-weight: 700; color: #2d3748; margin-bottom: 2px; }
-        .chef-details p { font-size: 11px; color: #718096; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .chef-details h4 { font-size: 20px; font-weight: 700; color: #2d3748; margin-bottom: 4px; }
+        .chef-details p { font-size: 15px; color: #718096; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        .footer-location { margin-top: auto; padding-top: 10px; font-size: 12px; color: #718096; display: flex; gap: 5px; font-weight: 500; }
+        .footer-location { margin-top: auto; padding-top: 15px; font-size: 14px; color: #718096; display: flex; gap: 8px; font-weight: 500; }
 
         /* --- 右侧 --- */
         .column-right {
@@ -167,34 +190,34 @@
         .month-rank-item { 
             display: flex; 
             align-items: center; 
-            padding: 10px 14px; 
-            margin-bottom: 8px;
+            padding: 16px 20px; 
+            margin-bottom: 14px;
             background-color: #fff;
-            border-radius: 10px;
+            border-radius: 12px;
             border: 1px solid #eef2f6;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.01);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .month-rank-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(15, 107, 72, 0.08);
-            border-color: rgba(15, 107, 72, 0.2);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(15, 107, 72, 0.1);
+            border-color: rgba(15, 107, 72, 0.25);
         }
-        .medal { width: 24px; margin-right: 10px; text-align: center; font-size: 16px; flex-shrink: 0; }
+        .medal { width: 36px; margin-right: 16px; text-align: center; font-size: 24px; flex-shrink: 0; }
         .chef-mini-photo { 
-            width: 32px; height: 32px; 
+            width: 48px; height: 48px; 
             background-color: #edf2f7; 
             border-radius: 50%; 
-            margin-right: 10px; 
+            margin-right: 16px; 
             object-fit: cover;
-            border: 1.5px solid #fff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border: 2px solid #fff;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.08);
             flex-shrink: 0;
         }
         .month-details { flex: 1; min-width: 0; }
-        .month-details strong { font-size: 13px; font-weight: 700; color: #2d3748; display: block; }
-        .month-details span { font-size: 11px; color: #718096; }
-        .month-score { margin-left: auto; font-size: 11px; font-weight: 600; color: #0f6b48; background-color: rgba(15, 107, 72, 0.08); padding: 2px 8px; border-radius: 10px; }
+        .month-details strong { font-size: 18px; font-weight: 700; color: #2d3748; display: block; margin-bottom: 4px; }
+        .month-details span { font-size: 14px; color: #718096; }
+        .month-score { margin-left: auto; font-size: 14px; font-weight: 600; color: #0f6b48; background-color: rgba(15, 107, 72, 0.08); padding: 4px 12px; border-radius: 12px; }
 
         /* 2. 卡片区域：固定底部 */
         .profile-card {
@@ -213,83 +236,86 @@
         /* 主厨信息区 */
         .profile-header { 
             display: flex; 
-            gap: 12px; 
-            margin-bottom: 12px;
-            padding-bottom: 10px;
+            gap: 16px; 
+            margin-bottom: 16px;
+            padding-bottom: 16px;
             border-bottom: 1px solid #edf2f7;
         }
         .profile-header .chef-photo {
-            width: 50px;
-            height: 50px;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
-            border: 2px solid #0f6b48;
-            box-shadow: 0 2px 5px rgba(15, 107, 72, 0.15);
+            border: 3px solid #0f6b48;
+            box-shadow: 0 3px 8px rgba(15, 107, 72, 0.2);
         }
         .profile-header .chef-details {
             flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
         .profile-header .chef-details h4 {
-            font-size: 15px;
-            margin-bottom: 4px;
+            font-size: 22px;
+            margin-bottom: 6px;
             color: #2d3748;
             font-weight: 700;
         }
         .profile-header .chef-details h4 span {
-            font-size: 11px;
+            font-size: 14px;
             color: #718096;
             font-weight: normal;
-            margin-left: 6px;
+            margin-left: 8px;
             background-color: #f1f5f9;
-            padding: 1px 6px;
-            border-radius: 4px;
+            padding: 2px 8px;
+            border-radius: 6px;
         }
         .profile-header .chef-details p {
-            font-size: 11px;
+            font-size: 15px;
             color: #718096;
-            line-height: 1.4;
-            margin-bottom: 4px;
+            line-height: 1.5;
+            margin-bottom: 6px;
         }
         
         /* 二维码区域 */
         .qr-section { 
             display: flex; 
-            gap: 12px;
+            gap: 16px;
             justify-content: center;
             align-items: stretch;
         }
         .qr-box { 
             flex: 1;
             background: #f8fafc;
-            padding: 8px; 
+            padding: 12px; 
             display: flex; 
             flex-direction: column;
             align-items: center;
-            gap: 4px; 
+            gap: 8px; 
             border: 1px solid #e2e8f0; 
-            border-radius: 10px;
+            border-radius: 12px;
             transition: all 0.25s ease;
         }
         .qr-box:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.06);
             border-color: #0f6b48;
         }
         .qr-img { 
-            width: 76px; 
-            height: 76px; 
+            width: 100px; 
+            height: 100px; 
             object-fit: contain;
-            border-radius: 6px;
-            padding: 3px;
+            border-radius: 8px;
+            padding: 4px;
             background: white;
         }
         .qr-label {
-            font-size: 11px;
+            font-size: 16px;
             font-weight: 700;
             color: #0f6b48;
             text-align: center;
         }
         .qr-desc {
-            font-size: 9px;
+            font-size: 13px;
             color: #718096;
             text-align: center;
         }
@@ -590,14 +616,13 @@
 
         <div class="main-content">
             <div class="column-left">
-                <div class="section-title">人气菜品榜</div>
-                <div class="dish-list page-fade" id="dish-container"></div>
+                <div class="section-title">人气厨师日榜</div>
+                <div class="chef-list-wrapper page-fade" id="chef-daily-container"></div>
             </div>
 
             <div class="column-middle">
-                <div class="section-title">人气厨师日榜</div>
-                <div class="chef-list-wrapper page-fade" id="chef-daily-container">
-                    </div>
+                <div class="section-title">人气菜品榜</div>
+                <div class="dish-list page-fade" id="dish-container"></div>
                 <div class="footer-location" style="justify-content: space-between; align-items: center;">
                     <span id="date-location">📍 --</span>
                     <a href="/admin.html" target="_blank" style="color: #a0aec0; text-decoration: none; font-size: 11px; transition: color 0.2s;" onmouseover="this.style.color='#0f6b48'" onmouseout="this.style.color='#a0aec0'">⚙️ 后台</a>
@@ -725,11 +750,27 @@
             
             const dishHtml = pageDishes.map((dish, index) => {
                 const rank = start + index + 1;
-                const totalVotes = dish.up + dish.down;
-                const likeRatio = totalVotes > 0 ? Math.round((dish.up / totalVotes) * 100) : 100;
+                
+                if (rank === 1) {
+                    return `
+                        <div class="dish-item-top1" data-dish-id="${dish.id}">
+                            <div class="rank-badge-top1">1</div>
+                            <div style="flex: 1; display: flex; flex-direction: column; z-index: 1;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div class="dish-info-top1">👑 ${dish.name} <span>${dish.chef}</span></div>
+                                    <div class="vote-stats-top1">
+                                        <span style="color: #059669;">👍 ${dish.up}</span>
+                                        <span style="color: #dc2626; margin-left: 12px;">👎 ${dish.down}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+
                 return `
                     <div class="dish-item" data-dish-id="${dish.id}">
-                        <div class="rank-badge ${rank === 1 ? 'top-1' : rank === 2 ? 'top-2' : rank === 3 ? 'top-3' : ''}">${rank}</div>
+                        <div class="rank-badge ${rank === 2 ? 'top-2' : rank === 3 ? 'top-3' : ''}">${rank}</div>
                         <div style="flex: 1; display: flex; flex-direction: column;">
                             <div style="display: flex; justify-content: space-between; align-items: center;">
                                 <div class="dish-info">${dish.name} - <span>${dish.chef}</span></div>
@@ -737,9 +778,6 @@
                                     <span style="color: #10b981;">👍 ${dish.up}</span>
                                     <span style="color: #ef4444; margin-left: 8px;">👎 ${dish.down}</span>
                                 </div>
-                            </div>
-                            <div class="vote-bar-container">
-                                <div class="vote-bar-fill" style="width: ${likeRatio}%"></div>
                             </div>
                         </div>
                     </div>
