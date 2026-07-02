@@ -131,7 +131,7 @@ function getConfig() {
         const now = new Date();
         const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
         const timeStr = now.getHours() < 14 ? '午餐' : '晚餐';
-        config.date_location = config.date_location || `${dateStr} ${timeStr}`;
+        config.date_location = `${dateStr} ${timeStr}`;
     }
     
     return config;

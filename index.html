@@ -4,100 +4,148 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>餐厅看板</title>
+    <link rel="icon" href="data:,">
     <style>
         /* --- 全局样式 --- */
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Microsoft YaHei", sans-serif; }
-        body { background-color: #f0f2f5; height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "SF Pro Text", "Helvetica Neue", "Microsoft YaHei", sans-serif; }
+        body { background-color: #f0f2f5; height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; -webkit-font-smoothing: antialiased; }
 
         /* 主大屏容器 */
         .dashboard-container {
             width: 95%; height: 90%;
-            background-color: #fff;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            background-color: #f8fafc;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.12);
             display: flex; flex-direction: column;
-            border-radius: 8px; overflow: hidden;
+            border-radius: 16px; overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.8);
         }
 
         /* 顶部导航 */
-        header { background-color: #0f6b48; color: rgba(255,255,255,0.8); padding: 10px 20px; font-size: 12px; display: flex; gap: 20px; justify-content: space-between; align-items: center; flex-shrink: 0; }
-        .header-left { display: flex; gap: 20px; }
+        header { background-color: #0f6b48; color: rgba(255,255,255,0.85); padding: 12px 24px; font-size: 13px; display: flex; gap: 20px; justify-content: space-between; align-items: center; flex-shrink: 0; }
+        .header-left { display: flex; gap: 20px; font-weight: 500; }
         .header-right { font-family: "KaiTi", "楷体", "STKaiti", "华文楷体", cursive; font-size: 18px; color: rgba(255,255,255,0.95); font-weight: normal; letter-spacing: 2px; }
-        .header-title-area { background-color: #0f6b48; color: #fff; padding: 10px 30px; font-size: 24px; font-weight: bold; flex-shrink: 0; }
+        .header-title-area { background-color: #0d5c3e; color: #fff; padding: 14px 30px; font-size: 26px; font-weight: 800; flex-shrink: 0; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
 
         /* 主内容区布局 */
-        .main-content { flex: 1; display: flex; padding: 20px 30px; gap: 30px; position: relative; overflow: hidden; }
-        .section-title { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 15px; flex-shrink: 0; }
+        .main-content { flex: 1; display: flex; padding: 24px 30px; gap: 30px; position: relative; overflow: hidden; }
+        .section-title { 
+            font-size: 18px; 
+            font-weight: 700; 
+            color: #1a202c; 
+            margin-bottom: 16px; 
+            flex-shrink: 0; 
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .section-title::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 16px;
+            background-color: #0f6b48;
+            border-radius: 2px;
+        }
 
         /* --- 左侧：菜品榜 --- */
-        .column-left { flex: 0 0 40%; display: flex; flex-direction: column; border-right: 1px solid #e0e0e0; padding-right: 20px; height: 100%; }
-        /* 列表滚动区 - 默认隐藏滚动条，滚动时显示 */
+        .column-left { flex: 0 0 38%; display: flex; flex-direction: column; height: 100%; }
         .dish-list { 
-            overflow-y: auto; 
+            overflow: hidden; 
             flex: 1; 
-            padding-right: 10px;
-            scrollbar-width: thin;
-            scrollbar-color: transparent transparent;
+            display: flex;
+            flex-direction: column;
         }
-        .dish-list:hover::-webkit-scrollbar,
-        .dish-list:active::-webkit-scrollbar {
-            width: 6px;
+
+        .dish-item { 
+            display: flex; 
+            align-items: center; 
+            padding: 10px 14px; 
+            margin-bottom: 8px;
+            background-color: #fff;
+            border-radius: 10px;
+            border: 1px solid #eef2f6;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.01);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .dish-list::-webkit-scrollbar {
-            width: 0px;
-            background: transparent;
+        .dish-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(15, 107, 72, 0.08);
+            border-color: rgba(15, 107, 72, 0.2);
         }
-        .dish-list::-webkit-scrollbar-thumb {
-            background: #ccc;
+        .rank-badge { 
+            width: 26px; height: 26px; 
+            background-color: #a0aec0; color: #fff; 
+            text-align: center; line-height: 26px; 
+            font-size: 13px; font-weight: 800;
+            margin-right: 12px; border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .rank-badge.top-1 { background: linear-gradient(135deg, #fcd34d, #f59e0b); color: #fff; box-shadow: 0 2px 6px rgba(245, 158, 11, 0.3); }
+        .rank-badge.top-2 { background: linear-gradient(135deg, #e2e8f0, #cbd5e1); color: #475569; box-shadow: 0 2px 6px rgba(203, 213, 225, 0.3); }
+        .rank-badge.top-3 { background: linear-gradient(135deg, #fdba74, #ea580c); color: #fff; box-shadow: 0 2px 6px rgba(234, 88, 12, 0.3); }
+        
+        .dish-info { flex: 1; font-size: 14px; font-weight: 700; color: #2d3748; }
+        .dish-info span { color: #718096; font-size: 12px; font-weight: normal; margin-left: 6px; }
+
+        .vote-stats { display: flex; gap: 12px; font-size: 13px; font-weight: 700; }
+        
+        /* 好评度进度条 */
+        .vote-bar-container {
+            width: 100%; height: 5px;
+            background-color: #edf2f7;
+            border-radius: 3px; overflow: hidden;
+            margin-top: 6px;
+        }
+        .vote-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #059669);
             border-radius: 3px;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .dish-list:hover::-webkit-scrollbar-thumb,
-        .dish-list:active::-webkit-scrollbar-thumb {
-            background: #999;
-        }
-
-        .dish-item { display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid #f5f5f5; }
-        .rank-badge { width: 24px; height: 24px; background-color: #999; color: #fff; text-align: center; line-height: 24px; font-size: 14px; margin-right: 15px; border-radius: 2px; }
-        .rank-badge.top-3 { background-color: #0f6b48; }
-        .dish-info { flex: 1; font-size: 15px; color: #333; }
-        .dish-info span { color: #666; font-size: 13px; }
-
-        .vote-stats { display: flex; gap: 15px; color: #666; font-size: 14px; }
-        .vote-stat-item { display: flex; gap: 4px; align-items: center; }
 
         /* --- 中间：日榜 --- */
-        .column-middle { flex: 0 0 30%; display: flex; flex-direction: column; position: relative; height: 100%; border-right: 1px solid #e0e0e0; padding-right: 20px; }
+        .column-middle { flex: 0 0 31%; display: flex; flex-direction: column; position: relative; height: 100%; }
         .chef-list-wrapper { 
             flex: 1; 
-            overflow-y: auto;
-            scrollbar-width: thin;
-            scrollbar-color: transparent transparent;
-        }
-        .chef-list-wrapper:hover::-webkit-scrollbar,
-        .chef-list-wrapper:active::-webkit-scrollbar {
-            width: 6px;
-        }
-        .chef-list-wrapper::-webkit-scrollbar {
-            width: 0px;
-            background: transparent;
-        }
-        .chef-list-wrapper::-webkit-scrollbar-thumb {
-            background: #ccc;
-            border-radius: 3px;
-        }
-        .chef-list-wrapper:hover::-webkit-scrollbar-thumb,
-        .chef-list-wrapper:active::-webkit-scrollbar-thumb {
-            background: #999;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
-        .chef-list-item { display: flex; margin-bottom: 25px; }
-        .chef-rank { font-size: 16px; color: #666; margin-right: 15px; padding-top: 10px; }
-        .chef-photo { width: 60px; height: 70px; background-color: #eee; margin-right: 15px; object-fit: cover; border-radius: 4px; }
-        .chef-details h4 { font-size: 16px; margin-bottom: 5px; color: #333; }
-        .chef-details p { font-size: 12px; color: #666; line-height: 1.4; }
+        .chef-list-item { 
+            display: flex; 
+            align-items: center;
+            padding: 10px 14px;
+            margin-bottom: 8px;
+            background-color: #fff;
+            border-radius: 10px;
+            border: 1px solid #eef2f6;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.01);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .chef-list-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(15, 107, 72, 0.08);
+            border-color: rgba(15, 107, 72, 0.2);
+        }
+        
+        .chef-photo { 
+            width: 44px; height: 44px; 
+            background-color: #edf2f7; 
+            margin-right: 12px; 
+            object-fit: cover; 
+            border-radius: 50%;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            flex-shrink: 0;
+        }
+        .chef-details { flex: 1; min-width: 0; }
+        .chef-details h4 { font-size: 14px; font-weight: 700; color: #2d3748; margin-bottom: 2px; }
+        .chef-details p { font-size: 11px; color: #718096; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        .footer-location { margin-top: auto; padding-top: 10px; font-size: 12px; color: #666; display: flex; gap: 5px; }
+        .footer-location { margin-top: auto; padding-top: 10px; font-size: 12px; color: #718096; display: flex; gap: 5px; font-weight: 500; }
 
-        /* --- 右侧：关键修复区域 --- */
+        /* --- 右侧 --- */
         .column-right {
             flex: 1;
             display: flex;
@@ -105,71 +153,77 @@
             position: relative;
             height: 100%;
             overflow: hidden;
-            padding-left: 20px;
         }
 
-        /* 1. 列表区域：占据剩余空间，独立滚动 */
         #chef-monthly-container {
             flex: 1;
-            overflow-y: auto;
-            min-height: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
             padding-bottom: 5px;
             margin-bottom: 5px;
-            scrollbar-width: thin;
-            scrollbar-color: transparent transparent;
-        }
-        #chef-monthly-container:hover::-webkit-scrollbar,
-        #chef-monthly-container:active::-webkit-scrollbar {
-            width: 6px;
-        }
-        #chef-monthly-container::-webkit-scrollbar {
-            width: 0px;
-            background: transparent;
-        }
-        #chef-monthly-container::-webkit-scrollbar-thumb {
-            background: #ccc;
-            border-radius: 3px;
-        }
-        #chef-monthly-container:hover::-webkit-scrollbar-thumb,
-        #chef-monthly-container:active::-webkit-scrollbar-thumb {
-            background: #999;
         }
 
-        .month-rank-item { display: flex; align-items: center; margin-bottom: 20px; }
-        .medal { width: 20px; margin-right: 10px; text-align: center; font-size: 18px; }
-        .chef-mini-photo { width: 40px; height: 40px; background-color: #eee; border-radius: 50%; margin-right: 10px; object-fit: cover; }
-        .month-details strong { font-size: 14px; display:block; }
-        .month-details span { font-size: 12px; color: #999; }
-        .month-score { margin-left: auto; font-size: 12px; color: #666; }
+        .month-rank-item { 
+            display: flex; 
+            align-items: center; 
+            padding: 10px 14px; 
+            margin-bottom: 8px;
+            background-color: #fff;
+            border-radius: 10px;
+            border: 1px solid #eef2f6;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.01);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .month-rank-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(15, 107, 72, 0.08);
+            border-color: rgba(15, 107, 72, 0.2);
+        }
+        .medal { width: 24px; margin-right: 10px; text-align: center; font-size: 16px; flex-shrink: 0; }
+        .chef-mini-photo { 
+            width: 32px; height: 32px; 
+            background-color: #edf2f7; 
+            border-radius: 50%; 
+            margin-right: 10px; 
+            object-fit: cover;
+            border: 1.5px solid #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            flex-shrink: 0;
+        }
+        .month-details { flex: 1; min-width: 0; }
+        .month-details strong { font-size: 13px; font-weight: 700; color: #2d3748; display: block; }
+        .month-details span { font-size: 11px; color: #718096; }
+        .month-score { margin-left: auto; font-size: 11px; font-weight: 600; color: #0f6b48; background-color: rgba(15, 107, 72, 0.08); padding: 2px 8px; border-radius: 10px; }
 
-        /* 2. 卡片区域：固定底部，不随列表滚动 */
+        /* 2. 卡片区域：固定底部 */
         .profile-card {
             flex-shrink: 0;
-            background: linear-gradient(135deg, #f9f9f9 0%, #ffffff 100%);
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid #e0e0e0;
-            margin-top: 8px;
-            margin-bottom: 60px;
+            background: #fff;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #eef2f5;
+            margin-top: auto;
+            margin-bottom: 55px; /* 留出底部logo空间 */
             position: relative;
             z-index: 10;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
         }
 
         /* 主厨信息区 */
         .profile-header { 
             display: flex; 
-            gap: 10px; 
+            gap: 12px; 
             margin-bottom: 12px;
             padding-bottom: 10px;
-            border-bottom: 1px solid #e8e8e8;
+            border-bottom: 1px solid #edf2f7;
         }
         .profile-header .chef-photo {
             width: 50px;
-            height: 60px;
-            border-radius: 6px;
-            border: 2px solid #e0e0e0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid #0f6b48;
+            box-shadow: 0 2px 5px rgba(15, 107, 72, 0.15);
         }
         .profile-header .chef-details {
             flex: 1;
@@ -177,85 +231,80 @@
         .profile-header .chef-details h4 {
             font-size: 15px;
             margin-bottom: 4px;
-            color: #333;
+            color: #2d3748;
+            font-weight: 700;
         }
         .profile-header .chef-details h4 span {
-            font-size: 12px;
-            color: #666;
+            font-size: 11px;
+            color: #718096;
             font-weight: normal;
             margin-left: 6px;
+            background-color: #f1f5f9;
+            padding: 1px 6px;
+            border-radius: 4px;
         }
         .profile-header .chef-details p {
             font-size: 11px;
-            color: #666;
+            color: #718096;
             line-height: 1.4;
             margin-bottom: 4px;
         }
         
-        /* 二维码区域 - 适中优化 */
+        /* 二维码区域 */
         .qr-section { 
             display: flex; 
-            gap: 10px;
+            gap: 12px;
             justify-content: center;
             align-items: stretch;
         }
         .qr-box { 
             flex: 1;
-            max-width: 145px;
-            background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
-            padding: 10px; 
+            background: #f8fafc;
+            padding: 8px; 
             display: flex; 
             flex-direction: column;
             align-items: center;
-            gap: 6px; 
-            border: 2px solid #0f6b48; 
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(15, 107, 72, 0.1);
-            transition: all 0.3s ease;
+            gap: 4px; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 10px;
+            transition: all 0.25s ease;
         }
         .qr-box:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(15, 107, 72, 0.18);
-            border-color: #1a8d5f;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            border-color: #0f6b48;
         }
         .qr-img { 
-            width: 90px; 
-            height: 90px; 
+            width: 76px; 
+            height: 76px; 
             object-fit: contain;
-            border: 2px solid #fff;
             border-radius: 6px;
-            padding: 4px;
+            padding: 3px;
             background: white;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
         }
         .qr-label {
-            font-size: 12px;
-            font-weight: bold;
+            font-size: 11px;
+            font-weight: 700;
             color: #0f6b48;
             text-align: center;
-            letter-spacing: 0.2px;
-            line-height: 1.2;
         }
         .qr-desc {
-            font-size: 10px;
-            color: #999;
+            font-size: 9px;
+            color: #718096;
             text-align: center;
-            line-height: 1.2;
-            margin-top: -2px;
         }
 
         /* 3. Logo 区域：绝对定位在右下角 */
         .huawei-logo {
             position: absolute;
-            bottom: 0;
-            right: 0;
+            bottom: 10px;
+            right: 10px;
             display: flex;
             align-items: center;
-            z-index: 999; /* 确保最上层 */
-            background: #fff; /* 防止背景透明文字重叠 */
-            padding: 5px;
+            z-index: 999;
+            background: transparent;
         }
-        .logo-img { height: 50px; width: auto; }
+        .logo-img { height: 35px; width: auto; }
 
         /* ===== 响应式设计 - 手机端适配 ===== */
         @media (max-width: 768px) {
@@ -513,6 +562,13 @@
                 height: 85px;
             }
         }
+        /* 翻页过渡动画 */
+        .page-fade {
+            transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .page-fade.fade-out {
+            opacity: 0;
+        }
 
     </style>
 </head>
@@ -535,22 +591,23 @@
         <div class="main-content">
             <div class="column-left">
                 <div class="section-title">人气菜品榜</div>
-                <div class="dish-list" id="dish-container"></div>
+                <div class="dish-list page-fade" id="dish-container"></div>
             </div>
 
             <div class="column-middle">
                 <div class="section-title">人气厨师日榜</div>
-                <div class="chef-list-wrapper" id="chef-daily-container">
+                <div class="chef-list-wrapper page-fade" id="chef-daily-container">
                     </div>
-                <div class="footer-location" id="date-location">
-                    📍 --
+                <div class="footer-location" style="justify-content: space-between; align-items: center;">
+                    <span id="date-location">📍 --</span>
+                    <a href="/admin.html" target="_blank" style="color: #a0aec0; text-decoration: none; font-size: 11px; transition: color 0.2s;" onmouseover="this.style.color='#0f6b48'" onmouseout="this.style.color='#a0aec0'">⚙️ 后台</a>
                 </div>
             </div>
 
             <div class="column-right">
                 <div class="section-title">人气厨师月榜</div>
 
-                <div id="chef-monthly-container">
+                <div class="page-fade" id="chef-monthly-container">
                     </div>
 
                 <div class="profile-card" id="profile-card" style="display:none;">
@@ -566,6 +623,29 @@
     <script>
         let currentData = null; // 保存当前数据用于错误回滚
         
+        // 分页配置与状态
+        const paginationState = {
+            dishes: {
+                containerId: 'dish-container',
+                pageSize: 8,
+                currentPage: 0,
+                renderFunc: renderDishesPage
+            },
+            chefDaily: {
+                containerId: 'chef-daily-container',
+                pageSize: 8,
+                currentPage: 0,
+                renderFunc: renderChefDailyPage
+            },
+            chefMonthly: {
+                containerId: 'chef-monthly-container',
+                pageSize: 3,
+                currentPage: 0,
+                renderFunc: renderChefMonthlyPage
+            }
+        };
+
+        let pageInterval = null;
 
         function renderPage(data) {
             currentData = data; // 更新全局引用
@@ -582,55 +662,21 @@
             logoImg.src = config.logo_url || 'static/logo.png';
             logoImg.onerror = function() { this.style.display = 'none'; }; // 图片坏了就隐藏
 
-            // 2. 渲染菜品列表（添加 data 属性支持优化）
-            const dishHtml = dishes.map((dish, index) => {
-                const rank = index + 1;
-                return `
-                    <div class="dish-item" data-dish-id="${dish.id}">
-                        <div class="rank-badge ${rank <= 3 ? 'top-3' : ''}">${rank}</div>
-                        <div class="dish-info">${dish.name} - <span>${dish.chef}</span></div>
-                        <div class="vote-stats">
-                            <div class="vote-stat-item">👍 ${dish.up}</div>
-                            <div class="vote-stat-item">👎 ${dish.down}</div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-            document.getElementById('dish-container').innerHTML = dishHtml;
+            // 重置/校验当前页码（如果数据变动导致总页数变少，重置为 0）
+            Object.keys(paginationState).forEach(key => {
+                const state = paginationState[key];
+                const dataArray = getPaginationData(key);
+                const totalPages = Math.ceil(dataArray.length / state.pageSize);
+                if (state.currentPage >= totalPages) {
+                    state.currentPage = 0;
+                }
+                // 渲染当前页
+                state.renderFunc(dataArray, state.currentPage);
+            });
 
-            // 3. 渲染厨师列表 (日榜)
-            const dailyChefs = [...chefs].sort((a,b) => a.daily_rank - b.daily_rank);
-            document.getElementById('chef-daily-container').innerHTML = dailyChefs.map(chef => `
-                <div class="chef-list-item">
-                    <div class="chef-rank">${chef.daily_rank}</div>
-                    <img src="${chef.photo}" class="chef-photo" onerror="this.src='//via.placeholder.com/60'">
-                    <div class="chef-details">
-                        <h4>${chef.name}</h4>
-                        <p>${chef.desc}</p>
-                    </div>
-                </div>
-            `).join('');
-
-            // 4. 渲染月榜（改进勋章显示）
-            const monthlyChefs = [...chefs].sort((a,b) => a.monthly_rank - b.monthly_rank);
-            const medals = ['🥇', '🥈', '🥉']; // 金银铜牌
-            document.getElementById('chef-monthly-container').innerHTML = monthlyChefs.map(chef => {
-                const medal = medals[chef.monthly_rank - 1] || chef.monthly_rank;
-                return `
-                    <div class="month-rank-item">
-                        <div class="medal">${medal}</div>
-                        <img src="${chef.photo}" class="chef-mini-photo" onerror="this.src='static/logo.png'">
-                        <div class="month-details">
-                            <strong>${chef.name}</strong>
-                            <span>本月得票: ${chef.monthly_votes}</span>
-                        </div>
-                        <div class="month-score">月度第${chef.monthly_rank}名</div>
-                    </div>
-                `;
-            }).join('');
-
-            // 5. 渲染个人卡片 (只要有厨师数据就显示)
-            const topChef = dailyChefs.length > 0 ? dailyChefs[0] : null;
+            // 2. 渲染主厨个人卡片 (始终基于日榜第一名，即使日榜在第二页，也显示第一名)
+            const sortedChefs = [...chefs].sort((a,b) => a.daily_rank - b.daily_rank);
+            const topChef = sortedChefs.length > 0 ? sortedChefs[0] : null;
             const card = document.getElementById('profile-card');
 
             if (topChef) {
@@ -641,8 +687,8 @@
                         <div class="chef-details">
                             <h4>${topChef.name} <span>${topChef.role}</span></h4>
                             <p>${topChef.desc}</p>
-                            <div style="margin-top: 5px; font-size: 10px; color: #999;">
-                                🏆 日榜${topChef.daily_rank} | 📊 月榜${topChef.monthly_rank} | 🎫 ${topChef.monthly_votes}票
+                            <div style="margin-top: 5px; font-size: 10px; color: #718096; font-weight: 500;">
+                                🏆 日榜第${topChef.daily_rank} | 📊 月榜第${topChef.monthly_rank} | 🎫 ${topChef.monthly_votes}票
                             </div>
                         </div>
                     </div>
@@ -666,6 +712,132 @@
             } else {
                 card.style.display = "none";
             }
+            
+            // 启动定时翻页
+            startPageRotation();
+        }
+
+        // 渲染单页菜品
+        function renderDishesPage(dishes, pageIndex) {
+            const pageSize = paginationState.dishes.pageSize;
+            const start = pageIndex * pageSize;
+            const pageDishes = dishes.slice(start, start + pageSize);
+            
+            const dishHtml = pageDishes.map((dish, index) => {
+                const rank = start + index + 1;
+                const totalVotes = dish.up + dish.down;
+                const likeRatio = totalVotes > 0 ? Math.round((dish.up / totalVotes) * 100) : 100;
+                return `
+                    <div class="dish-item" data-dish-id="${dish.id}">
+                        <div class="rank-badge ${rank === 1 ? 'top-1' : rank === 2 ? 'top-2' : rank === 3 ? 'top-3' : ''}">${rank}</div>
+                        <div style="flex: 1; display: flex; flex-direction: column;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div class="dish-info">${dish.name} - <span>${dish.chef}</span></div>
+                                <div class="vote-stats">
+                                    <span style="color: #10b981;">👍 ${dish.up}</span>
+                                    <span style="color: #ef4444; margin-left: 8px;">👎 ${dish.down}</span>
+                                </div>
+                            </div>
+                            <div class="vote-bar-container">
+                                <div class="vote-bar-fill" style="width: ${likeRatio}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            document.getElementById('dish-container').innerHTML = dishHtml;
+        }
+
+        // 渲染单页日榜厨师
+        function renderChefDailyPage(chefs, pageIndex) {
+            const pageSize = paginationState.chefDaily.pageSize;
+            const start = pageIndex * pageSize;
+            const pageChefs = chefs.slice(start, start + pageSize);
+            
+            document.getElementById('chef-daily-container').innerHTML = pageChefs.map(chef => {
+                const rank = chef.daily_rank;
+                return `
+                    <div class="chef-list-item">
+                        <div class="rank-badge ${rank === 1 ? 'top-1' : rank === 2 ? 'top-2' : rank === 3 ? 'top-3' : ''}">${rank}</div>
+                        <img src="${chef.photo}" class="chef-photo" onerror="this.src='static/logo.png'">
+                        <div class="chef-details">
+                            <h4>${chef.name}</h4>
+                            <p>${chef.desc}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 渲染单页月榜厨师
+        function renderChefMonthlyPage(chefs, pageIndex) {
+            const pageSize = paginationState.chefMonthly.pageSize;
+            const start = pageIndex * pageSize;
+            const pageChefs = chefs.slice(start, start + pageSize);
+            const medals = ['🥇', '🥈', '🥉']; // 金银铜牌
+            
+            document.getElementById('chef-monthly-container').innerHTML = pageChefs.map(chef => {
+                const medal = medals[chef.monthly_rank - 1] || chef.monthly_rank;
+                return `
+                    <div class="month-rank-item">
+                        <div class="medal">${medal}</div>
+                        <img src="${chef.photo}" class="chef-mini-photo" onerror="this.src='static/logo.png'">
+                        <div class="month-details">
+                            <strong>${chef.name}</strong>
+                            <span>本月得票: ${chef.monthly_votes}</span>
+                        </div>
+                        <div class="month-score">月度第${chef.monthly_rank}名</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 启动定时翻页旋转
+        function startPageRotation() {
+            if (pageInterval) {
+                clearInterval(pageInterval);
+            }
+            
+            pageInterval = setInterval(() => {
+                Object.keys(paginationState).forEach(key => {
+                    const state = paginationState[key];
+                    const dataArray = getPaginationData(key);
+                    if (!dataArray || dataArray.length <= state.pageSize) {
+                        return; // 数据未超过单页容量，不翻页
+                    }
+                    
+                    const totalPages = Math.ceil(dataArray.length / state.pageSize);
+                    const container = document.getElementById(state.containerId);
+                    if (!container) return;
+                    
+                    // 1. 渐隐
+                    container.classList.add('fade-out');
+                    
+                    // 2. 等待渐隐动画，渲染下一页并渐显
+                    setTimeout(() => {
+                        state.currentPage = (state.currentPage + 1) % totalPages;
+                        state.renderFunc(dataArray, state.currentPage);
+                        container.classList.remove('fade-out');
+                    }, 400);
+                });
+            }, 8000); // 每 8 秒翻页一次
+        }
+
+        // 获取特定类型的数据源
+        function getPaginationData(key) {
+            if (!currentData) return [];
+            if (key === 'dishes') {
+                return currentData.dishes || [];
+            }
+            if (key === 'chefDaily') {
+                const chefs = currentData.chefs || [];
+                return [...chefs].sort((a,b) => a.daily_rank - b.daily_rank);
+            }
+            if (key === 'chefMonthly') {
+                const chefs = currentData.chefs || [];
+                return [...chefs].sort((a,b) => a.monthly_rank - b.monthly_rank).slice(0, 3);
+            }
+            return [];
         }
 
         // 加载二维码
@@ -713,7 +885,6 @@
         }
         
         function startAutoRefresh() {
-            // 清除之前的定时器（如果存在）
             if (autoRefreshInterval) {
                 clearInterval(autoRefreshInterval);
             }
@@ -721,15 +892,12 @@
                 clearInterval(countdownInterval);
             }
             
-            // 每5分钟刷新一次
             autoRefreshInterval = setInterval(() => {
                 console.log('🔄 自动刷新数据...');
                 loadData();
-                // 重置倒计时
                 startCountdown();
             }, REFRESH_INTERVAL);
             
-            // 启动倒计时
             startCountdown();
             console.log('✅ 自动刷新已启动（每5分钟）');
         }
