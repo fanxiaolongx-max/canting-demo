@@ -1,4 +1,4 @@
-Hello Dragon Claw
+hello dragon
 
 一个现代化的餐厅数据展示与管理系统，支持菜品点赞、厨师排行、手机投票、匿名论坛等功能。
 
